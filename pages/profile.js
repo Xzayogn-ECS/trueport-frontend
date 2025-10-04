@@ -18,7 +18,7 @@ export default function Profile({ showToast }) {
     githubUsername: '',
     bio: '',
     role: 'STUDENT',
-  });
+  }); 
   const [education, setEducation] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
