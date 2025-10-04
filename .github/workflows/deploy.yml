@@ -15,20 +15,23 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install and build
+      # Build inside GitHub runner (fast)
+      - name: Install and Build
         run: |
           npm ci
           npm run build
 
-      - name: Upload files to EC2
+      # Upload only build artifacts to EC2 (no node_modules)
+      - name: Upload built files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./"
+          source: ".next,out,public,package.json,package-lock.json"
           target: "/var/www/trueportme-frontend"
 
+      # Create env + restart PM2 (no rebuild here)
       - name: Create .env.production and restart frontend
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -38,6 +41,4 @@ jobs:
           script: |
             cd /var/www/trueportme-frontend
             echo "${{ secrets.PROD_ENV_FILE }}" > .env.production
-            npm ci --omit=dev
-            npm run build || true
             pm2 restart trueportme-frontend --update-env || pm2 start npm --name trueportme-frontend --cwd /var/www/trueportme-frontend -- start
