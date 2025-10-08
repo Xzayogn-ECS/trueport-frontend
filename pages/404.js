@@ -12,7 +12,7 @@ export default function Custom404() {
         <div className="max-w-md mx-auto">
           <div className="mb-8">
             <svg
-              className="mx-auto h-24 w-24 text-gray-400"
+              className="mx-auto h-24 w-24 text-gray-400" 
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
