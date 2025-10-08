@@ -7,11 +7,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f9ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+           primary: {
+          /* Rebrand to green primary */
+          50: '#edf7f2',
+          100: '#d8efe5',
+          200: '#b5e0cc',
+          300: '#86c7aa',
+          400: '#4aa880',
+          500: '#2a8d67',
+          600: '#1f7b58',
+          700: '#19613e', /* requested */
+          800: '#124a2f',
+          900: '#0c3322',
         },
         success: { 50: '#f0fdf4', 500: '#22c55e' },
         error: { 50: '#fef2f2', 500: '#ef4444' },

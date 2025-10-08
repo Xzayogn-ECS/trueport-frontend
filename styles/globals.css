@@ -1,11 +1,15 @@
-/* Outfit font import MUST be before any other rules */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Outfit font import (Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 /* Custom base styles */
+@layer utilities{
+  @keyframes fade-up { 0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)} }
+  .animate-fade-up { animation: fade-up 0.35s ease forwards; }
+}
 @layer base {
   html {
     font-family: 'Outfit', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
@@ -97,7 +101,4 @@ body {
   .toast-error {
     @apply bg-error-50 text-red-700 border border-red-200;
   }
-
-  /* When sidebar is active, legacy page headers can be hidden if needed */
-  .with-sidebar .legacy-page-header { display: none; }
 }
