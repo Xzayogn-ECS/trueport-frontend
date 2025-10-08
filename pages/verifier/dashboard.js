@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import SidebarLayout from '../../components/SidebarLayout';
 import api from '../../utils/api';
 
 export default function VerifierDashboard({ showToast }) {
@@ -257,3 +258,7 @@ export default function VerifierDashboard({ showToast }) {
     </ProtectedRoute>
   );
 }
+
+VerifierDashboard.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Verifier Dashboard">{page}</SidebarLayout>;
+};

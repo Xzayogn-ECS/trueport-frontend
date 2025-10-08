@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import SidebarLayout from '../../components/SidebarLayout';
 import EducationCard from '../../components/EducationCard';
 import Pagination from '../../components/Pagination';
 import VerifierSelectionModal from '../../components/VerifierSelectionModal';
@@ -97,94 +98,94 @@ export default function Education({ showToast }) {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Education</h1>
-              <p className="text-gray-600">
-                {totalCount} education entr{totalCount !== 1 ? 'ies' : 'y'} total
-              </p>
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">My Education</h1>
+                <p className="text-sm text-gray-500">{totalCount} education entr{totalCount !== 1 ? 'ies' : 'y'} total</p>
+              </div>
+              <Link href="/education/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white bg-brand-grad shadow-sm hover:opacity-95 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M6 12h12"/></svg>
+                Add Education
+              </Link>
             </div>
-            <Link href="/education/new" className="btn-primary">
-              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Education
-            </Link>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="courseType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Course Type
-                </label>
-                <select
-                  id="courseType"
-                  className="form-input"
-                  value={filters.courseType}
-                  onChange={(e) => handleFilterChange('courseType', e.target.value)}
-                >
-                  <option value="">All Types</option>
-                  <option value="10TH">10th Grade</option>
-                  <option value="12TH">12th Grade</option>
-                  <option value="DIPLOMA">Diploma</option>
-                  <option value="BACHELORS">Bachelor's</option>
-                  <option value="MASTERS">Master's</option>
-                  <option value="PHD">PhD</option>
-                  <option value="CERTIFICATE">Certificate</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label htmlFor="verified" className="block text-sm font-medium text-gray-700 mb-1">
-                  Verification Status
-                </label>
-                <select
-                  id="verified"
-                  className="form-input"
-                  value={filters.verified}
-                  onChange={(e) => handleFilterChange('verified', e.target.value)}
-                >
-                  <option value="">All</option>
-                  <option value="true">Verified</option>
-                  <option value="false">Not Verified</option>
-                </select>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              {/* Course Type segmented */}
+              <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50 overflow-x-auto">
+                {[
+                  { key: '', label: 'All' },
+                  { key: '10TH', label: '10th' },
+                  { key: '12TH', label: '12th' },
+                  { key: 'DIPLOMA', label: 'Diploma' },
+                  { key: 'BACHELORS', label: 'Bachelors' },
+                  { key: 'MASTERS', label: 'Masters' },
+                  { key: 'PHD', label: 'PhD' },
+                  { key: 'CERTIFICATE', label: 'Certificate' },
+                  { key: 'OTHER', label: 'Other' },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => handleFilterChange('courseType', opt.key)}
+                    className={`px-3 sm:px-4 py-2 rounded-lg text-sm whitespace-nowrap transition ${
+                      filters.courseType === opt.key ? 'bg-white shadow-sm text-primary-800' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
 
-              <div className="flex items-end">
-                <button
-                  onClick={() => {
-                    setFilters({ verified: '', courseType: '', search: '' });
-                    setCurrentPage(1);
-                  }}
-                  className="btn-secondary w-full"
-                >
-                  Clear Filters
-                </button>
+              {/* Verified segmented */}
+              <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
+                {[
+                  { key: '', label: 'All' },
+                  { key: 'true', label: 'Verified' },
+                  { key: 'false', label: 'Unverified' },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => handleFilterChange('verified', opt.key)}
+                    className={`px-3 sm:px-4 py-2 rounded-lg text-sm transition ${
+                      filters.verified === opt.key ? 'bg-white shadow-sm text-primary-800' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
+
+              <button
+                onClick={() => { setFilters({ verified: '', courseType: '', search: '' }); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Clear
+              </button>
             </div>
           </div>
 
           {/* Education List */}
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
           ) : education.length > 0 ? (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {education.map((edu) => (
-                  <EducationCard
-                    key={edu._id}
-                    education={edu}
-                    showActions={true}
-                    onEdit={() => handleEdit(edu._id)}
-                    onDelete={() => handleDelete(edu._id)}
-                    onRequestVerification={() => handleRequestVerification(edu._id)}
-                    showToast={showToast}
-                  />
+                {education.map((edu, idx) => (
+                  <div key={edu._id} className="animate-fade-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                    <EducationCard
+                      education={edu}
+                      showActions={true}
+                      onEdit={() => handleEdit(edu._id)}
+                      onDelete={() => handleDelete(edu._id)}
+                      onRequestVerification={() => handleRequestVerification(edu._id)}
+                      showToast={showToast}
+                    />
+                  </div>
                 ))}
               </div>
 
@@ -231,3 +232,7 @@ export default function Education({ showToast }) {
     </ProtectedRoute>
   );
 }
+
+Education.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Education">{page}</SidebarLayout>;
+};

@@ -72,11 +72,11 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
     const academicCategories = ['RESEARCH_PAPER', 'THESIS_PROJECT', 'CASE_STUDY', 'LAB_EXPERIMENT', 'SURVEY_STUDY'];
     const creativeCategories = ['CREATIVE_WRITING', 'PHOTOGRAPHY', 'VIDEO_PRODUCTION', 'MUSIC_COMPOSITION', 'ART_PROJECT'];
     
-    if (techCategories.includes(cat)) return 'bg-blue-100 text-blue-800';
-    if (designCategories.includes(cat)) return 'bg-purple-100 text-purple-800';
-    if (businessCategories.includes(cat)) return 'bg-green-100 text-green-800';
-    if (academicCategories.includes(cat)) return 'bg-orange-100 text-orange-800';
-    if (creativeCategories.includes(cat)) return 'bg-pink-100 text-pink-800';
+    if (techCategories.includes(cat)) return 'bg-primary-50 text-primary-800';
+    if (designCategories.includes(cat)) return 'bg-purple-50 text-purple-800';
+    if (businessCategories.includes(cat)) return 'bg-emerald-50 text-emerald-800';
+    if (academicCategories.includes(cat)) return 'bg-amber-50 text-amber-800';
+    if (creativeCategories.includes(cat)) return 'bg-pink-50 text-pink-800';
     return 'bg-gray-100 text-gray-800';
   };
 
@@ -92,7 +92,7 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
       );
     }
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-800">
         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -103,7 +103,7 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="card overflow-hidden">
       <div className="p-4 sm:p-6">
         {/* Header with title and visibility badge */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3 sm:mb-4">

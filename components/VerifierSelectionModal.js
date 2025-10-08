@@ -13,6 +13,10 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    console.log('Selected verifier changed:', selectedVerifier);
+  }, [selectedVerifier]);
+
   const fetchVerifiers = async () => {
     try {
       setLoading(true);
@@ -20,6 +24,7 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
       const verifierData = response.data.verifiers || response.data || [];
       console.log('Fetched verifiers:', verifierData);
       setVerifiers(verifierData);
+      setSelectedVerifier(null); // Reset selection when fetching new verifiers
     } catch (error) {
       console.error('Failed to fetch verifiers:', error);
       showToast?.('Failed to load verifiers from your institute', 'error');
@@ -29,7 +34,7 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
   };
 
   const handleSubmitRequest = async () => {
-    console.log('handleSubmitRequest called!');
+    console.log('=== handleSubmitRequest called ===');
     console.log('selectedVerifier:', selectedVerifier);
     console.log('itemType:', itemType, 'itemId:', itemId);
     
@@ -39,27 +44,35 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
       return;
     }
 
+    if (!itemType || !itemId) {
+      console.log('Missing itemType or itemId');
+      showToast?.('Invalid item information', 'error');
+      return;
+    }
+
     try {
       setSubmitting(true);
-      console.log('Sending API request to:', `/verify/request/${itemType}/${itemId}`);
-      console.log('Request payload:', { verifierEmail: selectedVerifier.email });
+      const endpoint = `/verify/request/${itemType}/${itemId}`;
+      const payload = { verifierEmail: selectedVerifier.email };
       
-      const response = await api.post(`/verify/request/${itemType}/${itemId}`, {
-        verifierEmail: selectedVerifier.email
-      });
+      console.log('Sending API request to:', endpoint);
+      console.log('Request payload:', payload);
+      
+      const response = await api.post(endpoint, payload);
 
       console.log('API response:', response.data);
       showToast?.('Verification request sent successfully!', 'success');
       
       if (response.data.link) {
         console.log('Verification link:', response.data.link);
-        showToast?.('Verification link logged to console', 'success');
       }
 
       onSelectVerifier?.(selectedVerifier);
+      setSelectedVerifier(null);
       onClose();
     } catch (error) {
       console.error('Failed to send verification request:', error);
+      console.error('Error response:', error.response?.data);
       showToast?.(error.response?.data?.message || 'Failed to send verification request', 'error');
     } finally {
       setSubmitting(false);
@@ -99,43 +112,57 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
               </p>
               
               <div className="max-h-96 overflow-y-auto space-y-3">
-                {verifiers.map((verifier, index) => (
-                  <div
-                    key={verifier._id || verifier.id || `verifier-${index}`}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedVerifier?._id === verifier._id
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedVerifier(verifier)}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span className="text-primary-600 font-semibold">
-                          {verifier.name?.charAt(0)?.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {verifier.name}
-                        </h4>
-                        <p className="text-sm text-gray-600">{verifier.email}</p>
-                        {verifier.profileJson?.bio && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                            {verifier.profileJson.bio}
-                          </p>
-                        )}
-                      </div>
-                      {selectedVerifier?._id === verifier._id && (
-                        <div className="text-primary-600">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                {verifiers.map((verifier, index) => {
+                  const verifierId = verifier._id || verifier.id;
+                  const selectedId = selectedVerifier?._id || selectedVerifier?.id;
+                  const isSelected = selectedId === verifierId;
+                  
+                  return (
+                    <label
+                      key={verifierId || `verifier-${index}`}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all flex items-start ${
+                        isSelected
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => {
+                        console.log('Clicking verifier:', verifier);
+                        setSelectedVerifier(verifier);
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="verifier"
+                        checked={isSelected}
+                        onChange={() => {
+                          console.log('Radio onChange - selecting verifier:', verifier);
+                          setSelectedVerifier(verifier);
+                        }}
+                        className="mt-1 h-5 w-5 text-primary-600 border-gray-300 focus:ring-primary-500 cursor-pointer flex-shrink-0"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary-600 font-semibold">
+                              {verifier.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {verifier.name}
+                            </h4>
+                            <p className="text-sm text-gray-600">{verifier.email}</p>
+                            {verifier.profileJson?.bio && (
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                {verifier.profileJson.bio}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </>
           ) : (

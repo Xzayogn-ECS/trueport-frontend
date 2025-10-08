@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import SidebarLayout from '../../components/SidebarLayout';
 import api from '../../utils/api';
 
 export default function VerifierRequests({ showToast }) {
@@ -32,7 +33,9 @@ export default function VerifierRequests({ showToast }) {
       
       const verificationRequests = (verificationResponse.data.requests || []).map(req => ({
         ...req,
-        requestType: 'VERIFICATION'
+        requestType: 'VERIFICATION',
+        type: req.type || req.itemType || 'EXPERIENCE', // Ensure type is set
+        id: req._id || req.id
       }));
       
       const institutionRequests = (institutionResponse.data.requests || institutionResponse.data || []).map(req => ({
@@ -43,12 +46,12 @@ export default function VerifierRequests({ showToast }) {
         title: `Institution Association: ${req.institute}`,
         description: `Role: ${req.requestedRole}`,
         student: {
-          name: req.studentName,
-          email: req.studentEmail
+          name: req.student.name,
+          email: req.student.email
         },
-        requestedAt: req.createdAt
+        requestedAt: req.createdAt || req.requestedAt
       }));
-      console.log(institutionRequests)
+      console.log('Verification Requests:', verificationRequests);
       let allRequests = [...verificationRequests, ...institutionRequests];
       
       // Filter by request type if not 'ALL'
@@ -141,8 +144,14 @@ export default function VerifierRequests({ showToast }) {
     INSTITUTION: 'bg-indigo-100 text-indigo-800'
   };
 
-  const safeType = typeof type === 'string' && type.length ? type : 'UNKNOWN';
-  const display = safeType === 'INSTITUTION' ? 'Institution' : (safeType.charAt(0) + safeType.slice(1).toLowerCase());
+  // Normalize the type - handle different formats
+  const safeType = typeof type === 'string' && type.length 
+    ? type.toUpperCase() 
+    : 'EXPERIENCE';
+  
+  const display = safeType === 'INSTITUTION' 
+    ? 'Institution' 
+    : (safeType.charAt(0) + safeType.slice(1).toLowerCase());
 
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[safeType] || 'bg-gray-100 text-gray-800'}`}>
@@ -337,3 +346,7 @@ export default function VerifierRequests({ showToast }) {
     </ProtectedRoute>
   );
 }
+
+VerifierRequests.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Requests">{page}</SidebarLayout>;
+};

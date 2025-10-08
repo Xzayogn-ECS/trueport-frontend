@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import SidebarLayout from '../../components/SidebarLayout';
 import api from '../../utils/api';
 
 export default function VerifierStudents({ showToast }) {
@@ -223,3 +224,7 @@ export default function VerifierStudents({ showToast }) {
     </ProtectedRoute>
   );
 }
+
+VerifierStudents.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Students">{page}</SidebarLayout>;
+};

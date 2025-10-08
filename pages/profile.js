@@ -3,11 +3,13 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ProtectedRoute from '../components/ProtectedRoute';
+import SidebarLayout from '../components/SidebarLayout';
 import EducationCard from '../components/EducationCard';
 import ProjectCard from '../components/ProjectCard';
 import api from '../utils/api';
 import userAPI from '../utils/userAPI';
 import WCard from '../components/WCard';
+import UserMiniCard from '../components/UserMiniCard';
 
 export default function Profile({ showToast }) {
   const router = useRouter();
@@ -409,7 +411,7 @@ const fetchContactInfo = async () => {
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
+          <div className="mb-8" id="tab-profile">
             <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
             <p className="text-gray-600">Manage your personal information, education, and projects</p>
           </div>
@@ -437,7 +439,6 @@ const fetchContactInfo = async () => {
               >
                 Institution
               </button>
-            
               <button
                 onClick={() => {
                   setActiveTab('portfolio');
@@ -454,10 +455,7 @@ const fetchContactInfo = async () => {
                 Portfolio Visibility
               </button>
               <button
-                onClick={() => {
-                  setActiveTab('settings');
-                 
-                }}
+                onClick={() => setActiveTab('settings')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'settings'
                     ? 'border-primary-600 text-primary-600'
@@ -475,6 +473,10 @@ const fetchContactInfo = async () => {
               {/* WCard Preview */}
               <div className="mb-8">
                 <WCard user={user} contactInfo={contactInfo} portfolioUrl={portfolioUrl} showToast={showToast} />
+              </div>
+              {/* User card with avatar, name and email */}
+              <div className="mb-6">
+                <UserMiniCard user={user} />
               </div>
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -760,7 +762,7 @@ const fetchContactInfo = async () => {
 
           {/* Institution Association Tab */}
           {activeTab === 'institution' && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200" id="tab-institution">
               <div className="p-6">
                 <div className="mb-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Institution Association</h3>
@@ -1051,7 +1053,7 @@ const fetchContactInfo = async () => {
          
           {/* Portfolio Visibility Tab */}
           {activeTab === 'portfolio' && (
-            <div className="space-y-6">
+            <div className="space-y-6" id="tab-portfolio">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Portfolio Visibility</h2>
                 <p className="text-gray-600">Control what appears on your public portfolio. Only verified items can be made visible.</p>
@@ -1334,3 +1336,8 @@ const fetchContactInfo = async () => {
     </ProtectedRoute>
   );
 }
+
+// Attach layout
+Profile.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Profile Settings">{page}</SidebarLayout>;
+};

@@ -4,6 +4,7 @@ import { instituteAdminAPI, adminAuth } from '../../../utils/adminAPI';
 import { getAuthToken, removeAuthToken } from '../../../utils/auth';
 import SingleToast from '../../../components/SingleToast';
 import AdminProtectedRoute from '../../../components/AdminProtectedRoute';
+import AdminSidebarLayout from '../../../components/AdminSidebarLayout';
 import { parseCSV, validateCSVData, downloadCSVTemplate } from '../../../utils/csvHelper';
 import { uploadCSVToCloudinary, validateCSVFile } from '../../../utils/upload';
 
@@ -42,6 +43,25 @@ function InstituteAdminDashboardContent() {
     }
     loadDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync activeTab with URL hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['overview', 'users', 'requests', 'settings'].includes(hash)) {
+        setActiveTab(hash);
+      } else {
+        setActiveTab('overview');
+      }
+    };
+
+    // Set initial tab based on hash
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   const resolveResponseUser = (res) => {
@@ -403,46 +423,7 @@ function InstituteAdminDashboardContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:h-16 space-y-3 sm:space-y-0">
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-sm">T</span>
-              </div>
-              <div>
-                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Institute Admin Dashboard</h1>
-                <p className="text-xs sm:text-sm text-gray-500 truncate">{institution?.displayName || institution?.name || ''}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <span className="text-xs sm:text-sm text-gray-700 truncate max-w-[150px] sm:max-w-none">Welcome, {user?.name}</span>
-              <button onClick={handleLogout} className="text-xs sm:text-sm text-red-600 hover:text-red-500 whitespace-nowrap">Logout</button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
-        <div className="border-b border-gray-200 mb-6 overflow-x-auto">
-          <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max sm:min-w-0">
-            {[
-              { id: 'overview', name: 'Overview' },
-              { id: 'users', name: 'Users' },
-              { id: 'requests', name: 'Association Requests' },
-              { id: 'settings', name: 'Settings' }
-            ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
-                {tab.name}
-                {tab.id === 'requests' && associationRequests.length > 0 && (
-                  <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{associationRequests.length}</span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
 
         {/* Overview */}
         {activeTab === 'overview' && analytics && (
@@ -807,3 +788,7 @@ export default function InstituteAdminDashboard() {
     </AdminProtectedRoute>
   );
 }
+
+InstituteAdminDashboard.getLayout = function getLayout(page) {
+  return <AdminSidebarLayout title="Institute Admin">{page}</AdminSidebarLayout>;
+};

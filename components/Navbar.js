@@ -53,7 +53,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Brand */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/" className="text-lg sm:text-xl font-bold text-primary-600 truncate">TruePortMe</Link>
+            <Link href="/" className="text-lg sm:text-xl font-bold text-primary-700 truncate">TruePortMe</Link>
             <span className="hidden md:inline-block text-xs text-gray-500">Portfolio & verifications</span>
           </div>
 

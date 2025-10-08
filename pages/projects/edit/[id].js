@@ -5,28 +5,91 @@ import ProtectedRoute from '../../../components/ProtectedRoute';
 import api from '../../../utils/api';
 
 import CreatableSelect from 'react-select/creatable';
-const SKILL_OPTIONS = [
-  'React','React Native','Next.js','Node.js','Express','MongoDB','Postgres','TypeScript',
-  'JavaScript','Python','Django','Flask','Java','Spring Boot','C++','C#','Go','Rust',
-  'HTML','CSS','Tailwind CSS','Bootstrap','Redux','MobX','GraphQL','Apollo','REST',
-  'Docker','Kubernetes','AWS','GCP','Azure','Firebase','Redis','Postman','Jest','Cypress',
-  'TensorFlow','PyTorch','Pandas','Numpy','SQL','NoSQL','Electron','Socket.IO','Three.js'
-].map(s => ({ label: s, value: s }));
+
+const PROJECT_CATEGORIES = {
+  // Tech Projects
+  'SOFTWARE_DEVELOPMENT': 'Software Development',
+  'WEB_APPLICATION': 'Web Application',
+  'MOBILE_APP': 'Mobile App',
+  'DATA_SCIENCE': 'Data Science',
+  'AI_ML_PROJECT': 'AI/ML Project',
+  
+  // Design Projects
+  'UI_UX_DESIGN': 'UI/UX Design',
+  'GRAPHIC_DESIGN': 'Graphic Design',
+  'PRODUCT_DESIGN': 'Product Design',
+  'BRAND_IDENTITY': 'Brand Identity',
+  'DIGITAL_ART': 'Digital Art',
+  
+  // Business Projects
+  'BUSINESS_PLAN': 'Business Plan',
+  'MARKET_RESEARCH': 'Market Research',
+  'STARTUP_PITCH': 'Startup Pitch',
+  'MARKETING_CAMPAIGN': 'Marketing Campaign',
+  'FINANCIAL_ANALYSIS': 'Financial Analysis',
+  
+  // Academic Projects
+  'RESEARCH_PAPER': 'Research Paper',
+  'THESIS_PROJECT': 'Thesis Project',
+  'CASE_STUDY': 'Case Study',
+  'LAB_EXPERIMENT': 'Lab Experiment',
+  'SURVEY_STUDY': 'Survey Study',
+  
+  // Creative Projects
+  'CREATIVE_WRITING': 'Creative Writing',
+  'PHOTOGRAPHY': 'Photography',
+  'VIDEO_PRODUCTION': 'Video Production',
+  'MUSIC_COMPOSITION': 'Music Composition',
+  'ART_PROJECT': 'Art Project',
+  
+  // Other
+  'COMMUNITY_SERVICE': 'Community Service',
+  'INTERNSHIP_PROJECT': 'Internship Project',
+  'FREELANCE_WORK': 'Freelance Work',
+  'COMPETITION_ENTRY': 'Competition Entry',
+  'OTHER': 'Other'
+};
+
+const TECH_CATEGORIES = ['SOFTWARE_DEVELOPMENT', 'WEB_APPLICATION', 'MOBILE_APP', 'DATA_SCIENCE', 'AI_ML_PROJECT'];
+const DESIGN_CATEGORIES = ['UI_UX_DESIGN', 'GRAPHIC_DESIGN', 'PRODUCT_DESIGN', 'BRAND_IDENTITY', 'DIGITAL_ART'];
+const BUSINESS_CATEGORIES = ['BUSINESS_PLAN', 'MARKET_RESEARCH', 'STARTUP_PITCH', 'MARKETING_CAMPAIGN', 'FINANCIAL_ANALYSIS'];
+const ACADEMIC_CATEGORIES = ['RESEARCH_PAPER', 'THESIS_PROJECT', 'CASE_STUDY', 'LAB_EXPERIMENT', 'SURVEY_STUDY'];
+
+const SKILL_OPTIONS = {
+  tech: ['React', 'React Native', 'Next.js', 'Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'TypeScript', 'JavaScript', 'Python', 'Django', 'Flask', 'Java', 'Spring Boot', 'C++', 'C#', 'Go', 'Rust', 'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'Redux', 'GraphQL', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Firebase', 'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Analysis'],
+  design: ['Adobe Photoshop', 'Adobe Illustrator', 'Figma', 'Sketch', 'Adobe XD', 'InVision', 'Principle', 'Framer', 'Adobe After Effects', 'Adobe Premiere', 'Canva', 'Color Theory', 'Typography', 'User Research', 'Wireframing', 'Prototyping', 'Brand Strategy', 'Logo Design'],
+  business: ['Market Research', 'Financial Modeling', 'Business Strategy', 'SWOT Analysis', 'Competitive Analysis', 'Excel', 'PowerPoint', 'Google Analytics', 'SEO', 'SEM', 'Social Media Marketing', 'Content Marketing', 'Email Marketing', 'CRM', 'Project Management', 'Leadership', 'Team Management'],
+  academic: ['Research Methodology', 'Statistical Analysis', 'Data Collection', 'Literature Review', 'Academic Writing', 'SPSS', 'R', 'Matlab', 'LaTeX', 'Citation Management', 'Survey Design', 'Interview Techniques', 'Qualitative Analysis', 'Quantitative Analysis'],
+  creative: ['Creative Writing', 'Storytelling', 'Photography', 'Video Editing', 'Audio Production', 'Music Theory', 'Composition', 'Adobe Creative Suite', 'Final Cut Pro', 'Logic Pro', 'ProTools', 'Lighting', 'Color Grading', 'Script Writing'],
+  general: ['Communication', 'Problem Solving', 'Critical Thinking', 'Time Management', 'Collaboration', 'Presentation Skills', 'Microsoft Office', 'Google Workspace', 'Project Planning', 'Documentation']
+};
 
 export default function EditProject({ showToast }) {
   const router = useRouter();
   const { id } = router.query;
+  const [projectType, setProjectType] = useState(null); // 'github' or 'multidisciplinary'
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
+    category: '',
     description: '',
-    repositoryUrl: '',
-    liveUrl: '',
-    technologies: [],
+    skillsUsed: [],
     learnings: '',
+    links: {
+      githubUrl: '',
+      liveUrl: '',
+      portfolioUrl: '',
+      documentUrl: ''
+    },
+    duration: {
+      startDate: '',
+      endDate: ''
+    },
+    course: '',
+    supervisor: '',
+    collaborators: ''
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [techInput, setTechInput] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -38,15 +101,56 @@ export default function EditProject({ showToast }) {
     try {
       const response = await api.get(`/projects/${id}`);
    
-      const project = response.data.project || response.data.githubProject;
-      setFormData({
-        name: project.projectName,
-        description: project.description,
-        repositoryUrl: project.repositoryUrl,
-        liveUrl: project.liveUrl || '',
-        technologies: project.technologies || [],
-        learnings: project.learnings,
-      });
+      const project = response.data.project;
+      const githubProject = response.data.githubProject;
+      
+      if (project) {
+        // Multi-disciplinary project
+        setProjectType('multidisciplinary');
+        setFormData({
+          title: project.title || '',
+          category: project.category || '',
+          description: project.description || '',
+          skillsUsed: project.skillsUsed || [],
+          learnings: project.learnings || '',
+          links: {
+            githubUrl: project.links?.githubUrl || '',
+            liveUrl: project.links?.liveUrl || '',
+            portfolioUrl: project.links?.portfolioUrl || '',
+            documentUrl: project.links?.documentUrl || ''
+          },
+          duration: {
+            startDate: project.duration?.startDate ? new Date(project.duration.startDate).toISOString().split('T')[0] : '',
+            endDate: project.duration?.endDate ? new Date(project.duration.endDate).toISOString().split('T')[0] : ''
+          },
+          course: project.course || '',
+          supervisor: project.supervisor || '',
+          collaborators: project.collaborators || ''
+        });
+      } else if (githubProject) {
+        // GitHub project - convert to new format
+        setProjectType('github');
+        setFormData({
+          title: githubProject.projectName || '',
+          category: 'SOFTWARE_DEVELOPMENT',
+          description: githubProject.description || '',
+          skillsUsed: githubProject.technologies || [],
+          learnings: githubProject.learnings || '',
+          links: {
+            githubUrl: githubProject.repositoryUrl || '',
+            liveUrl: githubProject.liveUrl || '',
+            portfolioUrl: '',
+            documentUrl: ''
+          },
+          duration: {
+            startDate: '',
+            endDate: ''
+          },
+          course: '',
+          supervisor: '',
+          collaborators: ''
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch project:', error);
       showToast('Failed to load project details', 'error');
@@ -58,36 +162,59 @@ export default function EditProject({ showToast }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const addTechnology = (e) => {
-    e.preventDefault();
-    if (techInput.trim() && !formData.technologies.includes(techInput.trim())) {
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
       setFormData({
         ...formData,
-        technologies: [...formData.technologies, techInput.trim()],
+        [parent]: {
+          ...formData[parent],
+          [child]: value
+        }
       });
-      setTechInput('');
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
   };
 
-  const removeTechnology = (tech) => {
-    setFormData({
-      ...formData,
-      technologies: formData.technologies.filter(t => t !== tech),
-    });
+  const getSkillOptions = () => {
+    if (!formData.category) return SKILL_OPTIONS.general;
+    
+    if (TECH_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.tech, ...SKILL_OPTIONS.general];
+    if (DESIGN_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.design, ...SKILL_OPTIONS.general];
+    if (BUSINESS_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.business, ...SKILL_OPTIONS.general];
+    if (ACADEMIC_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.academic, ...SKILL_OPTIONS.general];
+    return [...SKILL_OPTIONS.creative, ...SKILL_OPTIONS.general];
   };
+
+  const isTechProject = () => TECH_CATEGORIES.includes(formData.category);
+  const isDesignProject = () => DESIGN_CATEGORIES.includes(formData.category);
+  const isBusinessProject = () => BUSINESS_CATEGORIES.includes(formData.category);
+  const isAcademicProject = () => ACADEMIC_CATEGORIES.includes(formData.category);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await api.put(`/projects/${id}`, formData);
+      // Clean up the data structure for API
+      const submitData = {
+        ...formData,
+        // Remove empty links
+        links: Object.fromEntries(
+          Object.entries(formData.links).filter(([key, value]) => value.trim() !== '')
+        ),
+        // Remove empty duration if both dates are empty
+        ...(formData.duration.startDate || formData.duration.endDate ? { duration: formData.duration } : {}),
+        // Remove empty optional fields
+        ...(formData.course ? { course: formData.course } : {}),
+        ...(formData.supervisor ? { supervisor: formData.supervisor } : {}),
+        ...(formData.collaborators ? { collaborators: formData.collaborators } : {})
+      };
+
+      await api.put(`/projects/${id}`, submitData);
       showToast('Project updated successfully!', 'success');
       router.push('/projects');
     } catch (error) {
@@ -121,27 +248,78 @@ export default function EditProject({ showToast }) {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Edit Project</h1>
-            <p className="text-gray-600">Update your project details and learnings</p>
+            <p className="text-gray-600">Update your project details</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Project Title */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Project Name *
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  Project Title *
                 </label>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
+                  id="title"
+                  name="title"
                   required
                   className="form-input mt-1"
-                  placeholder="e.g., E-commerce Website, Todo App"
-                  value={formData.name}
+                  placeholder="e.g., E-commerce Website, Brand Identity Design, Market Research Study"
+                  value={formData.title}
                   onChange={handleChange}
                 />
               </div>
 
+              {/* Project Category */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                  Project Category *
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  required
+                  className="form-input mt-1"
+                  value={formData.category}
+                  onChange={handleChange}
+                >
+                  <option value="">Select a category</option>
+                  <optgroup label="Tech Projects">
+                    {TECH_CATEGORIES.map(key => (
+                      <option key={key} value={key}>{PROJECT_CATEGORIES[key]}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Design Projects">
+                    {DESIGN_CATEGORIES.map(key => (
+                      <option key={key} value={key}>{PROJECT_CATEGORIES[key]}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Business Projects">
+                    {BUSINESS_CATEGORIES.map(key => (
+                      <option key={key} value={key}>{PROJECT_CATEGORIES[key]}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Academic Projects">
+                    {ACADEMIC_CATEGORIES.map(key => (
+                      <option key={key} value={key}>{PROJECT_CATEGORIES[key]}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Creative Projects">
+                    {Object.entries(PROJECT_CATEGORIES)
+                      .filter(([key]) => ['CREATIVE_WRITING', 'PHOTOGRAPHY', 'VIDEO_PRODUCTION', 'MUSIC_COMPOSITION', 'ART_PROJECT'].includes(key))
+                      .map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="Other">
+                    {['COMMUNITY_SERVICE', 'INTERNSHIP_PROJECT', 'FREELANCE_WORK', 'COMPETITION_ENTRY', 'OTHER'].map(key => (
+                      <option key={key} value={key}>{PROJECT_CATEGORIES[key]}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Project Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                   Project Description *
@@ -152,75 +330,193 @@ export default function EditProject({ showToast }) {
                   required
                   rows={4}
                   className="form-textarea mt-1"
-                  placeholder="Describe what your project does, its main features, and purpose..."
+                  placeholder="Describe your project, its objectives, and key outcomes..."
                   value={formData.description}
                   onChange={handleChange}
                 />
               </div>
 
+              {/* Duration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="repositoryUrl" className="block text-sm font-medium text-gray-700">
-                    Repository URL
+                  <label htmlFor="duration.startDate" className="block text-sm font-medium text-gray-700">
+                    Start Date
                   </label>
                   <input
-                    type="url"
-                    id="repositoryUrl"
-                    name="repositoryUrl"
+                    type="date"
+                    id="duration.startDate"
+                    name="duration.startDate"
                     className="form-input mt-1"
-                    placeholder="https://github.com/username/repository (optional for non-tech projects)"
-                    value={formData.repositoryUrl}
+                    value={formData.duration.startDate}
                     onChange={handleChange}
                   />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Optional: Add repository link if applicable
-                  </p>
                 </div>
-
                 <div>
-                  <label htmlFor="liveUrl" className="block text-sm font-medium text-gray-700">
-                    Live Demo URL
+                  <label htmlFor="duration.endDate" className="block text-sm font-medium text-gray-700">
+                    End Date
                   </label>
                   <input
-                    type="url"
-                    id="liveUrl"
-                    name="liveUrl"
+                    type="date"
+                    id="duration.endDate"
+                    name="duration.endDate"
                     className="form-input mt-1"
-                    placeholder="https://your-project.vercel.app"
-                    value={formData.liveUrl}
+                    value={formData.duration.endDate}
                     onChange={handleChange}
                   />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Optional: Link to deployed version
-                  </p>
                 </div>
               </div>
 
+              {/* Links Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Project Links</h3>
+                
+                {/* Tech Project Links */}
+                {isTechProject() && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="links.githubUrl" className="block text-sm font-medium text-gray-700">
+                        Repository URL
+                      </label>
+                      <input
+                        type="url"
+                        id="links.githubUrl"
+                        name="links.githubUrl"
+                        className="form-input mt-1"
+                        placeholder="https://github.com/username/repository"
+                        value={formData.links.githubUrl}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="links.liveUrl" className="block text-sm font-medium text-gray-700">
+                        Live Demo URL
+                      </label>
+                      <input
+                        type="url"
+                        id="links.liveUrl"
+                        name="links.liveUrl"
+                        className="form-input mt-1"
+                        placeholder="https://your-project.vercel.app"
+                        value={formData.links.liveUrl}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Design Project Links */}
+                {isDesignProject() && (
+                  <div>
+                    <label htmlFor="links.portfolioUrl" className="block text-sm font-medium text-gray-700">
+                      Portfolio URL
+                    </label>
+                    <input
+                      type="url"
+                      id="links.portfolioUrl"
+                      name="links.portfolioUrl"
+                      className="form-input mt-1"
+                      placeholder="https://behance.net/gallery/123456/project or https://dribbble.com/shots/123456"
+                      value={formData.links.portfolioUrl}
+                      onChange={handleChange}
+                    />
+                  </div>
+                )}
+
+                {/* Business/Academic Project Links */}
+                {(isBusinessProject() || isAcademicProject()) && (
+                  <div>
+                    <label htmlFor="links.documentUrl" className="block text-sm font-medium text-gray-700">
+                      Document URL
+                    </label>
+                    <input
+                      type="url"
+                      id="links.documentUrl"
+                      name="links.documentUrl"
+                      className="form-input mt-1"
+                      placeholder="https://drive.google.com/document/123 or https://dropbox.com/s/file.pdf"
+                      value={formData.links.documentUrl}
+                      onChange={handleChange}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Academic Fields */}
+              {isAcademicProject() && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="course" className="block text-sm font-medium text-gray-700">
+                      Course/Subject
+                    </label>
+                    <input
+                      type="text"
+                      id="course"
+                      name="course"
+                      className="form-input mt-1"
+                      placeholder="e.g., Business Strategy 101, Research Methods"
+                      value={formData.course}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="supervisor" className="block text-sm font-medium text-gray-700">
+                      Supervisor/Advisor
+                    </label>
+                    <input
+                      type="text"
+                      id="supervisor"
+                      name="supervisor"
+                      className="form-input mt-1"
+                      placeholder="e.g., Prof. Smith, Dr. Johnson"
+                      value={formData.supervisor}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Collaborators */}
               <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Technologies Used</label>
+                <label htmlFor="collaborators" className="block text-sm font-medium text-gray-700">
+                  Collaborators
+                </label>
+                <input
+                  type="text"
+                  id="collaborators"
+                  name="collaborators"
+                  className="form-input mt-1"
+                  placeholder="Names of team members or collaborators (optional)"
+                  value={formData.collaborators}
+                  onChange={handleChange}
+                />
+              </div>
 
-  <CreatableSelect
-    isMulti
-    options={SKILL_OPTIONS}
-    // current value as array of {label,value}
-    value={formData.technologies.map(t => ({ label: t, value: t }))}
-    onChange={(selected) => {
-      // selected can be null
-      const arr = Array.isArray(selected) ? selected.map(s => s.value) : [];
-      setFormData(prev => ({ ...prev, technologies: arr }));
-    }}
-    placeholder="Type or select technologies (press Enter to add)"
-    className="react-select-container"
-    classNamePrefix="react-select"
-    formatCreateLabel={(input) => `Add "${input}"`}
-  />
-
-  <p className="mt-1 text-sm text-gray-500">Pick from common techs or type and press Enter to add custom ones.</p>
-</div>
+              {/* Skills Used */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Skills Used *
+                </label>
+                <CreatableSelect
+                  isMulti
+                  options={getSkillOptions().map(skill => ({ label: skill, value: skill }))}
+                  value={formData.skillsUsed.map(skill => ({ label: skill, value: skill }))}
+                  onChange={(selected) => {
+                    const skills = Array.isArray(selected) ? selected.map(s => s.value) : [];
+                    setFormData(prev => ({ ...prev, skillsUsed: skills }));
+                  }}
+                  placeholder="Type or select skills (press Enter to add custom ones)"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  formatCreateLabel={(input) => `Add "${input}"`}
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Select relevant skills or add custom ones. Skills will be suggested based on your project category.
+                </p>
+              </div>
 
               <div>
                 <label htmlFor="learnings" className="block text-sm font-medium text-gray-700">
-                  Key Learnings *
+                  Key Learnings & Insights *
                 </label>
                 <textarea
                   id="learnings"
@@ -228,28 +524,29 @@ export default function EditProject({ showToast }) {
                   required
                   rows={6}
                   className="form-textarea mt-1"
-                  placeholder="What did you learn while building this project? What challenges did you face and how did you solve them? What would you do differently next time?"
+                  placeholder="What did you learn from this project? What challenges did you face and how did you overcome them? What insights did you gain?"
                   value={formData.learnings}
                   onChange={handleChange}
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Share your genuine learning experience and what you gained from this project
+                  Share your genuine learning experience and key takeaways from this project.
                 </p>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex">
-                  <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Project Guidelines</h3>
-                    <div className="mt-2 text-sm text-green-700">
+                    <h3 className="text-sm font-medium text-blue-800">Portfolio Guidelines</h3>
+                    <div className="mt-2 text-sm text-blue-700">
                       <ul className="list-disc list-inside space-y-1">
-                        <li>Share your authentic project experience</li>
-                        <li>Include meaningful repository links if available</li>
-                        <li>List technologies that were actually used</li>
-                        <li>Describe what you learned and challenges faced</li>
+                        <li>Projects showcase your individual work and creativity</li>
+                        <li>Provide relevant links (repository, portfolio, documents) to demonstrate your work</li>
+                        <li>Skills listed should genuinely reflect those used in the project</li>
+                        <li>Learning insights help others understand your growth and development</li>
+                        <li>Projects are displayed based on your privacy settings</li>
                         <li>No verification required - your work speaks for itself!</li>
                       </ul>
                     </div>

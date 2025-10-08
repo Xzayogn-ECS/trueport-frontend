@@ -33,7 +33,7 @@ const EducationCard = ({ education, showActions = false, onEdit, onDelete, onReq
   };
 
   return (
-    <div className="card hover:shadow-md transition-shadow">
+    <div className="card">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-3 sm:mb-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 break-words">{courseName}</h3>
@@ -63,17 +63,17 @@ const EducationCard = ({ education, showActions = false, onEdit, onDelete, onReq
         <div className="mb-3">
           <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs sm:text-sm">
             {grade && (
-              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+              <span className="bg-primary-50 text-primary-800 px-2 py-1 rounded">
                 Grade: {grade}
               </span>
             )}
             {percentage && (
-              <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+              <span className="bg-emerald-50 text-emerald-800 px-2 py-1 rounded">
                 {percentage}%
               </span>
             )}
             {cgpa && (
-              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+              <span className="bg-amber-50 text-amber-800 px-2 py-1 rounded">
                 CGPA: {cgpa}
               </span>
             )}

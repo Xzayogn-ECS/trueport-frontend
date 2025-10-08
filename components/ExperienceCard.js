@@ -22,7 +22,7 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
   };
 
   return (
-    <div className="card hover:shadow-md transition-shadow">
+    <div className="card">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-3 sm:mb-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 break-words">{title}</h3>

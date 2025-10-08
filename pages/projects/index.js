@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import SidebarLayout from '../../components/SidebarLayout';
 import ProjectCard from '../../components/ProjectCard';
 import Pagination from '../../components/Pagination';
 
@@ -127,112 +128,86 @@ export default function Projects({ showToast }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-                <p className="text-gray-600">Manage your projects and showcase your work</p>
+                <p className="text-sm text-gray-500">Curate, categorize and share your best work.</p>
               </div>
-              <Link
-                href="/projects/new"
-                className="btn-primary"
-              >
-                Add New Project
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/projects/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white bg-brand-grad shadow-sm hover:opacity-95 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M6 12h12"/></svg>
+                  Add Project
+                </Link>
+                <Link href="/github/connect" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 hover:border-primary-200 hover:text-primary-700 transition">
+                  Import from GitHub
+                </Link>
+              </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Projects</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Public</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.public}</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            {[
+              { label: 'Total', value: stats.total, icon: (
+                <svg className="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10v10H7z"/></svg>
+              ) },
+              { label: 'Public', value: stats.public, icon: (
+                <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              ) },
+              { label: 'Private', value: stats.private, icon: (
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029"/></svg>
+              ) },
+              { label: 'Recent', value: stats.recent, icon: (
+                <svg className="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              ) },
+            ].map((s) => (
+              <div key={s.label} className="rounded-2xl p-4 bg-white border border-gray-100 shadow-sm flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-primary-50">{s.icon}</div>
+                <div>
+                  <div className="text-xs text-gray-500">{s.label}</div>
+                  <div className="text-xl font-semibold text-gray-900">{s.value}</div>
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-2 bg-gray-100 rounded-lg">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Private</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.private}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Recent</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.recent}</p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Filters and Search */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              {/* Segmented filter */}
+              <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
+                {[
+                  { key: 'all', label: 'All' },
+                  { key: 'public', label: 'Public' },
+                  { key: 'private', label: 'Private' },
+                  { key: 'recent', label: 'Recent' },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => { setFilter(opt.key); setCurrentPage(1); }}
+                    className={`px-3 sm:px-4 py-2 rounded-lg text-sm transition ${
+                      filter === opt.key ? 'bg-white shadow-sm text-primary-800' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2">
+                <div className="flex-1 flex items-center bg-gray-50 rounded-xl px-3 py-2 border border-gray-200">
+                  <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
                   <input
                     type="text"
                     placeholder="Search projects by name, technology, or description..."
-                    className="form-input flex-1"
+                    className="bg-transparent outline-none text-sm ml-2 flex-1"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <button type="submit" className="btn-primary">
-                    Search
-                  </button>
-                </form>
-              </div>
-              <div className="flex gap-2">
-                <select
-                  className="form-input"
-                  value={filter}
-                  onChange={(e) => {
-                    setFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Projects</option>
-                  <option value="public">Public</option>
-                  <option value="private">Private</option>
-                  <option value="recent">Recent (Last 30 days)</option>
-                </select>
-              </div>
+                </div>
+                <button type="submit" className="btn-primary">Search</button>
+              </form>
             </div>
           </div>
 
@@ -260,15 +235,16 @@ export default function Projects({ showToast }) {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {projects.map((project) => (
-                  <ProjectCard
-                    key={project._id}
-                    project={project}
-                    showActions={true}
-                    onEdit={() => router.push(`/projects/edit/${project._id}`)}
-                    onDelete={() => handleDelete(project._id)}
-                    showToast={showToast}
-                  />
+                {projects.map((project, idx) => (
+                  <div key={project._id} className="animate-fade-up" style={{ animationDelay: `${idx * 40}ms` }}>
+                    <ProjectCard
+                      project={project}
+                      showActions={true}
+                      onEdit={() => router.push(`/projects/edit/${project._id}`)}
+                      onDelete={() => handleDelete(project._id)}
+                      showToast={showToast}
+                    />
+                  </div>
                 ))}
               </div>
 
@@ -288,3 +264,7 @@ export default function Projects({ showToast }) {
     </ProtectedRoute>
   );
 }
+
+Projects.getLayout = function getLayout(page) {
+  return <SidebarLayout title="Projects">{page}</SidebarLayout>;
+};
