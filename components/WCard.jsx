@@ -11,7 +11,7 @@ function getInitials(name = '') {
   return (a?.[0] || '') + (b?.[0] || '');
 }
 
-export default function WCard({ user, contactInfo, portfolioUrl, showToast, compact = false, showControls = true, stats, showDisclaimer = false }) {
+export default function WCard({ user, contactInfo, portfolioUrl, showToast, compact = false, showControls = true, stats, showDisclaimer = false, customUrls = [] }) {
   const cardRef = useRef(null);
   const qrRef = useRef(null);
   const [openQR, setOpenQR] = useState(false);
@@ -26,6 +26,11 @@ export default function WCard({ user, contactInfo, portfolioUrl, showToast, comp
       github: contactInfo?.githubVisible && ghUsername ? `https://github.com/${ghUsername}` : null,
     };
   }, [contactInfo, user]);
+
+  // Filter visible custom URLs
+  const visibleCustomUrls = useMemo(() => {
+    return (customUrls || [])
+  }, [customUrls]);
 
   return (
     <div className={`bg-white ${compact ? 'rounded-lg shadow border p-4 max-w-xs' : 'rounded-xl shadow-sm border p-4 sm:p-5'} border-gray-200`} aria-label="wcard-container">
@@ -99,6 +104,23 @@ export default function WCard({ user, contactInfo, portfolioUrl, showToast, comp
                   <span>GitHub</span>
                 </a>
               )}
+              
+              {/* Custom URLs */}
+              {visibleCustomUrls.map((customUrl) => (
+                <a 
+                  key={customUrl._id} 
+                  href={customUrl.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-1.5 hover:text-primary-600 transition-colors"
+                  title={customUrl.label}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  <span>{customUrl.label}</span>
+                </a>
+              ))}
             </div>
 
             {!compact && showDisclaimer && (

@@ -6,6 +6,9 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedVerifier, setSelectedVerifier] = useState(null);
+  const [externalMode, setExternalMode] = useState(false);
+  const [externalForm, setExternalForm] = useState({ name: '', organization: '', email: '' });
+  const [externalSubmitting, setExternalSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,6 +79,45 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
       showToast?.(error.response?.data?.message || 'Failed to send verification request', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSendExternalInvite = async () => {
+    // External invite: send name, organization, email to backend which will create an invite + magic link
+    if (!externalForm.name || !externalForm.email) {
+      showToast?.('Please provide name and email for the verifier', 'error');
+      return;
+    }
+
+    if (!itemType || !itemId) {
+      showToast?.('Invalid item information', 'error');
+      return;
+    }
+
+    try {
+      setExternalSubmitting(true);
+      const payload = {
+        name: externalForm.name,
+        organization: externalForm.organization,
+        email: externalForm.email,
+        itemType,
+        itemId
+      };
+
+      // Backend endpoint expected: POST /verifier-invites (ready as per backend note)
+      console.log(payload)
+      const res = await api.post('/verifier-invites', payload);
+      showToast?.('Invite sent to verifier. They will receive a magic link via email.', 'success');
+      // Optionally return created invite info to parent
+      onSelectVerifier?.({ name: externalForm.name, email: externalForm.email, organization: externalForm.organization });
+      setExternalForm({ name: '', organization: '', email: '' });
+      setExternalMode(false);
+      onClose();
+    } catch (err) {
+      console.error('Failed to send external invite:', err);
+      showToast?.(err.response?.data?.message || 'Failed to send invite', 'error');
+    } finally {
+      setExternalSubmitting(false);
     }
   };
 
@@ -176,6 +218,43 @@ const VerifierSelectionModal = ({ isOpen, onClose, onSelectVerifier, itemType, i
               </p>
             </div>
           )}
+
+          {/* External invite / fallback */}
+          <div className="mt-4 border-t pt-4">
+            <p className="text-sm text-gray-600 mb-2">Can't see your verifier?</p>
+            {!externalMode ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setExternalMode(true)}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-gray-200 text-sm"
+                >
+                  Fill verifier details and send invite
+                </button>
+                <span className="text-xs text-gray-500">or select from the list above</span>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-gray-700">Name *</label>
+                  <input type="text" className="form-input mt-1" value={externalForm.name} onChange={(e) => setExternalForm({ ...externalForm, name: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700">Organization</label>
+                  <input type="text" className="form-input mt-1" value={externalForm.organization} onChange={(e) => setExternalForm({ ...externalForm, organization: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700">Email *</label>
+                  <input type="email" className="form-input mt-1" value={externalForm.email} onChange={(e) => setExternalForm({ ...externalForm, email: e.target.value })} />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => { setExternalMode(false); setExternalForm({ name: '', organization: '', email: '' }); }} className="btn-secondary">Cancel</button>
+                  <button onClick={handleSendExternalInvite} disabled={externalSubmitting} className="btn-primary">
+                    {externalSubmitting ? 'Sending...' : 'Send Invite'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Actions */}
           {verifiers.length > 0 && (

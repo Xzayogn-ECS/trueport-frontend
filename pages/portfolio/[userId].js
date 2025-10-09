@@ -14,6 +14,7 @@ export default function PublicPortfolio() {
   const [education, setEducation] = useState([]);
   const [projects, setProjects] = useState([]);
   const [githubRepos, setGithubRepos] = useState([]);
+  const [customUrls, setCustomUrls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [githubLoading, setGithubLoading] = useState(false);
 
@@ -33,6 +34,11 @@ export default function PublicPortfolio() {
       setExperiences(Array.isArray(response.data.experiences) ? response.data.experiences : []);
       setEducation(Array.isArray(response.data.education) ? response.data.education : []);
       setProjects(Array.isArray(response.data.projects) ? response.data.projects : Array.isArray(response.data.githubProjects) ? response.data.githubProjects : []);
+      
+      // Set custom URLs from contactInfo (they're nested inside contactInfo object)
+      const urls = response.data.user?.contactInfo?.customUrls || response.data.user?.customUrls || [];
+      setCustomUrls(Array.isArray(urls) ? urls : []);
+      console.log('Custom URLs:', urls);
 
       // Fetch GitHub repos if a username exists (from contactInfo or user)
       const ghUser = response.data.user?.contactInfo?.githubUsername || response.data.user?.githubUsername;
@@ -171,6 +177,7 @@ export default function PublicPortfolio() {
             compact={false}
             showControls={false}
             stats={stats}
+            customUrls={customUrls}
           />
         </div>
 

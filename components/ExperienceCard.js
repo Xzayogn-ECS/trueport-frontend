@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { useState } from 'react';
+import ProofModal from './ProofModal';
 
 const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onRequestVerification, showToast }) => {
+  const [showProof, setShowProof] = useState(false);
   const { 
     _id, 
     title, 
@@ -90,6 +93,13 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
         </div>
       )}
 
+      {/* View Proof action */}
+      {attachments.length > 0 && (
+        <div className="mt-2">
+          <button onClick={() => setShowProof(true)} className="text-sm text-primary-600 hover:text-primary-700">View Proof</button>
+        </div>
+      )}
+
       {showActions && (
         <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4 border-t border-gray-200">
           <button
@@ -125,6 +135,10 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
             <span className="ml-1 sm:hidden">Delete</span>
           </button>
         </div>
+      )}
+      {/* Proof modal */}
+      {showProof && (
+        <ProofModal isOpen={showProof} onClose={() => setShowProof(false)} item={experience} request={null} />
       )}
     </div>
   );

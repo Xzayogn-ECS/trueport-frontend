@@ -19,6 +19,7 @@ export default function VerifyToken({ showToast }) {
 
   const fetchVerificationData = async () => {
     try {
+      console.log(token)
       const response = await api.get(`/verify/${token}`);
       setVerification(response.data.verification || response.data);
       setExperience(response.data.experience || response.data.verification?.experience);

@@ -10,6 +10,7 @@ import api from '../utils/api';
 import userAPI from '../utils/userAPI';
 import WCard from '../components/WCard';
 import UserMiniCard from '../components/UserMiniCard';
+import CustomUrlManager from '../components/CustomUrlManager';
 
 export default function Profile({ showToast }) {
   const router = useRouter();
@@ -731,6 +732,11 @@ const fetchContactInfo = async () => {
                     </button>
                   </div>
                 </form>
+              </div>
+
+              {/* Custom URLs */}
+              <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <CustomUrlManager showToast={showToast} />
               </div>
 
               {/* Portfolio Link */}
