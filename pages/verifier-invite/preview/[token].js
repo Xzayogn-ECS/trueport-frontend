@@ -346,28 +346,28 @@ export default function VerifierInvitePreview({ showToast }) {
                 {requestedInfo.githubLink && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">GitHub Link</label>
-                    <a 
+                    <Link
                       href={requestedInfo.githubLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="mt-1 text-sm text-primary-600 hover:text-primary-800"
                     >
                       {requestedInfo.githubLink}
-                    </a>
+                    </Link>
                   </div>
                 )}
 
                 {requestedInfo.liveLink && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Live Link</label>
-                    <a 
+                    <Link
                       href={requestedInfo.liveLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="mt-1 text-sm text-primary-600 hover:text-primary-800"
                     >
                       {requestedInfo.liveLink}
-                    </a>
+                    </Link>
                   </div>
                 )}
 
@@ -376,7 +376,7 @@ export default function VerifierInvitePreview({ showToast }) {
                     <label className="block text-sm font-medium text-gray-500 mb-2">Attachments</label>
                     <div className="space-y-2">
                       {requestedInfo.attachments.map((url, i) => (
-                        <a
+                        <Link
                           key={i}
                           href={url}
                           target="_blank"
@@ -387,7 +387,7 @@ export default function VerifierInvitePreview({ showToast }) {
                             <path fillRule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 002 0V7a3 3 0 00-3-3z" clipRule="evenodd" />
                           </svg>
                           View Attachment {i + 1}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -496,12 +496,12 @@ export default function VerifierInvitePreview({ showToast }) {
 
             {hasAccount && (
               <div className="mt-6">
-                <a 
+                <Link
                   href="/verifier/dashboard" 
                   className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
                 >
                   Go to Your Dashboard
-                </a>
+                </Link>
               </div>
             )}
           </div>
