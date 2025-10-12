@@ -5,6 +5,8 @@ import ProtectedRoute from '../../components/ProtectedRoute';
 import SidebarLayout from '../../components/SidebarLayout';
 import api from '../../utils/api';
 
+
+
 export default function CollaborationRequests({ showToast }) {
   const [activeTab, setActiveTab] = useState('incoming');
   const [incomingRequests, setIncomingRequests] = useState([]);
