@@ -27,6 +27,7 @@ export const superAdminAPI = {
   // Institution Management
   getInstitutions: async (params = {}) => {
     const response = await api.get('/super-admin/institutions', { params });
+    console.log('Super Admin Institutions:', response.data);
     return response.data;
   },
 
@@ -42,6 +43,40 @@ export const superAdminAPI = {
 
   deleteInstitution: async (id) => {
     const response = await api.delete(`/super-admin/institutions/${id}`);
+    return response.data;
+  },
+
+  // Approve institution
+  approveInstitution: async (id) => {
+    const response = await api.post(`/super-admin/institutions/${id}/approve`);
+    return response.data;
+  },
+  // Get institution details
+  getInstitution: async (id) => {
+    const response = await api.get(`/super-admin/institutions/${id}`);
+    console.log(response.data);
+    return response.data;
+  },
+  // Claim Requests Management
+  getClaimRequests: async (params = {}) => {
+    const response = await api.get('/institution-create/admin/requests', { params });
+    return response.data;
+  },
+  getClaimRequest: async (id) => {
+    const response = await api.get(`/institution-create/admin/requests/${id}`);
+    return response.data;
+  },
+  approveClaimRequest: async (requestId) => {
+    const response = await api.post(`/institution-create/admin/requests/${requestId}/approve`);
+    return response.data;
+  },
+  rejectClaimRequest: async (requestId, rejectionReason) => {
+    const response = await api.post(`/institution-create/admin/requests/${requestId}/reject`, { rejectionReason });
+    return response.data;
+  },
+  // Get institution creation options (districts, states, types)
+  getInstitutionOptions: async () => {
+    const response = await api.get('/institution-create/options');
     return response.data;
   },
 

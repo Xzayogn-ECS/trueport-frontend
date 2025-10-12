@@ -16,6 +16,8 @@ const Icon = ({ name, className = 'w-5 h-5' }) => {
       return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/></svg>;
     case 'admins':
       return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4s-4 1.79-4 4 1.79 4 4 4zm0 2c-3.31 0-6 1.79-6 4v2h12v-2c0-2.21-2.69-4-6-4z"/></svg>;
+    case 'events':
+      return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>;
     case 'settings':
       return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317a1 1 0 011.35-.936l1.93.644a1 1 0 00.945-.192l1.52-1.216a1 1 0 011.414.09l1.414 1.414a1 1 0 01.09 1.414l-1.216 1.52a1 1 0 00-.192.945l.644 1.93a1 1 0 01-.936 1.35l-2.02.29a1 1 0 00-.8.6l-.78 1.86a1 1 0 01-1.83 0l-.78-1.86a1 1 0 00-.8-.6l-2.02-.29a1 1 0 01-.936-1.35l.644-1.93a1 1 0 00-.192-.945l-1.216-1.52a1 1 0 01.09-1.414l1.414-1.414a1 1 0 011.414-.09l1.52 1.216a1 1 0 00.945.192l1.93-.644z"/><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
     case 'logout':
@@ -90,6 +92,7 @@ export default function AdminSidebarLayout({ children, title = '' }) {
         { href: '/admin/institute-admin/dashboard', icon: 'dashboard', label: 'Dashboard', hash: '' },
         { href: '/admin/institute-admin/dashboard#users', icon: 'users', label: 'Users', hash: 'users' },
         { href: '/admin/institute-admin/dashboard#requests', icon: 'requests', label: 'Requests', hash: 'requests' },
+        { href: '/admin/institute-admin/events', icon: 'events', label: 'Events' },
         { href: '/admin/institute-admin/dashboard#settings', icon: 'settings', label: 'Settings', hash: 'settings' },
       ];
     }
@@ -120,19 +123,28 @@ export default function AdminSidebarLayout({ children, title = '' }) {
           <div>
             <div className="text-xs text-gray-400 font-medium px-3 mb-2">Menu</div>
             {items.map((it) => {
-              const isActive = it.hash === currentHash;
+              // Check if it's a hash-based nav item or a regular link
+              const isHashNav = it.hash !== undefined;
+              const isActive = isHashNav 
+                ? it.hash === currentHash
+                : router.pathname === it.href || router.pathname.startsWith(`${it.href}/`);
               
               const handleNavClick = () => {
-                if (it.hash) {
-                  // Navigate to hash on same page
-                  window.location.hash = it.hash;
+                if (isHashNav) {
+                  if (it.hash) {
+                    // Navigate to hash on same page
+                    window.location.hash = it.hash;
+                  } else {
+                    // Remove hash for overview/dashboard
+                    const url = window.location.pathname + window.location.search;
+                    history.replaceState(null, '', url);
+                    setCurrentHash('');
+                    // Trigger hashchange for the dashboard to update
+                    window.dispatchEvent(new HashChangeEvent('hashchange'));
+                  }
                 } else {
-                  // Remove hash for overview/dashboard
-                  const url = window.location.pathname + window.location.search;
-                  history.replaceState(null, '', url);
-                  setCurrentHash('');
-                  // Trigger hashchange for the dashboard to update
-                  window.dispatchEvent(new HashChangeEvent('hashchange'));
+                  // Regular navigation - let Link handle it
+                  return;
                 }
               };
 
@@ -143,7 +155,7 @@ export default function AdminSidebarLayout({ children, title = '' }) {
                   icon={it.icon}
                   label={it.label}
                   active={isActive}
-                  onClick={handleNavClick}
+                  onClick={isHashNav ? handleNavClick : undefined}
                 />
               );
             })}

@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import ProtectedRoute from '../../../components/ProtectedRoute';
 import api from '../../../utils/api';
+import AddCollaboratorModal from '../../../components/AddCollaboratorModal';
+import { showToast } from '../../../components/Toast';
 
 import CreatableSelect from 'react-select/creatable';
 
@@ -90,12 +92,36 @@ export default function EditProject({ showToast }) {
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [linkedCollaborators, setLinkedCollaborators] = useState([]);
+  const [showAddCollaboratorModal, setShowAddCollaboratorModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     if (id) {
       fetchProject();
+      fetchCurrentUser();
     }
   }, [id]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setCurrentUser(response.data.user);
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+    }
+  };
+
+  const fetchCollaborators = async () => {
+    try {
+      // Use the new collaborations endpoint
+      const response = await api.get(`/collaborations/projects/${id}/collaborators`);
+      setLinkedCollaborators(response.data.collaborators || []);
+    } catch (error) {
+      console.error('Failed to fetch collaborators:', error);
+      setLinkedCollaborators([]);
+    }
+  };
 
   const fetchProject = async () => {
     try {
@@ -151,6 +177,9 @@ export default function EditProject({ showToast }) {
           collaborators: ''
         });
       }
+      
+      // Fetch linked collaborators
+      await fetchCollaborators();
     } catch (error) {
       console.error('Failed to fetch project:', error);
       showToast('Failed to load project details', 'error');
@@ -193,6 +222,26 @@ export default function EditProject({ showToast }) {
   const isDesignProject = () => DESIGN_CATEGORIES.includes(formData.category);
   const isBusinessProject = () => BUSINESS_CATEGORIES.includes(formData.category);
   const isAcademicProject = () => ACADEMIC_CATEGORIES.includes(formData.category);
+
+  const handleRemoveCollaborator = async (userId) => {
+    if (!confirm('Are you sure you want to remove this collaborator?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/collaborations/projects/${id}/collaborators/${userId}`);
+      showToast('Collaborator removed successfully', 'success');
+      fetchCollaborators();
+    } catch (error) {
+      console.error('Failed to remove collaborator:', error);
+      showToast(error.response?.data?.message || 'Failed to remove collaborator', 'error');
+    }
+  };
+
+  const handleCollaboratorRequestSent = () => {
+    showToast('Collaboration request sent successfully!', 'success');
+    fetchCollaborators();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -478,7 +527,7 @@ export default function EditProject({ showToast }) {
               {/* Collaborators */}
               <div>
                 <label htmlFor="collaborators" className="block text-sm font-medium text-gray-700">
-                  Collaborators
+                  Collaborators (Legacy Field)
                 </label>
                 <input
                   type="text"
@@ -489,6 +538,96 @@ export default function EditProject({ showToast }) {
                   value={formData.collaborators}
                   onChange={handleChange}
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Use the "Linked Collaborators" section below to add verified collaborators to this project.
+                </p>
+              </div>
+
+              {/* Linked Collaborators Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">Linked Collaborators</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Add verified collaborators to this project (max 5). They will see this project on their portfolio.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCollaboratorModal(true)}
+                    disabled={linkedCollaborators.length >= 5}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Add Collaborator</span>
+                  </button>
+                </div>
+
+                {linkedCollaborators.length > 0 ? (
+                  <div className="space-y-3">
+                    {linkedCollaborators.map((collab) => (
+                      <div
+                        key={collab.userId?._id || collab.userId}
+                        className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0">
+                            {collab.userId?.profilePicture ? (
+                              <img
+                                src={collab.userId.profilePicture}
+                                alt={collab.userId?.name || 'User'}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-medium">
+                                {collab.userId?.name?.charAt(0).toUpperCase() || '?'}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {collab.userId?.name || 'Unknown User'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {collab.role}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCollaborator(collab.userId?._id || collab.userId)}
+                          className="text-red-600 hover:text-red-700 transition-colors"
+                          title="Remove collaborator"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p className="mt-2 text-sm text-gray-500">No collaborators added yet</p>
+                    <p className="text-sm text-gray-400">Click "Add Collaborator" to invite team members</p>
+                  </div>
+                )}
+
+                {linkedCollaborators.length >= 5 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start space-x-2">
+                    <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-sm text-yellow-800">
+                      Maximum of 5 collaborators reached. Remove a collaborator to add a new one.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Skills Used */}
@@ -574,6 +713,14 @@ export default function EditProject({ showToast }) {
             </form>
           </div>
         </div>
+
+        {/* Add Collaborator Modal */}
+        <AddCollaboratorModal
+          isOpen={showAddCollaboratorModal}
+          onClose={() => setShowAddCollaboratorModal(false)}
+          projectId={id}
+          onRequestSent={handleCollaboratorRequestSent}
+        />
       </div>
     </ProtectedRoute>
   );

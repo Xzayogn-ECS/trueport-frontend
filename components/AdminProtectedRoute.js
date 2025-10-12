@@ -12,7 +12,7 @@ const AdminProtectedRoute = ({ children, adminType }) => {
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
-        console.log(`=== ADMIN PROTECTED ROUTE (${adminType}) ===`);
+        console.log(`=== ADMIN PROTECTED ROUTE (${adminType || 'auto-detect'}) ===`);
         const token = getAuthToken();
         console.log('Token in protected route:', token);
         
@@ -22,28 +22,43 @@ const AdminProtectedRoute = ({ children, adminType }) => {
         }
 
         let profileResponse;
-        console.log(`Calling ${adminType} admin API getProfile()`);
-        if (adminType === 'super') {
+        let detectedAdminType = adminType;
+        
+        // If adminType not provided, try to auto-detect from URL
+        if (!detectedAdminType) {
+          if (router.pathname.includes('/admin/super-admin')) {
+            detectedAdminType = 'super';
+          } else if (router.pathname.includes('/admin/institute-admin')) {
+            detectedAdminType = 'institute';
+          }
+        }
+        
+        console.log(`Calling ${detectedAdminType} admin API getProfile()`);
+        if (detectedAdminType === 'super') {
           profileResponse = await superAdminAPI.getProfile();
-        } else if (adminType === 'institute') {
+        } else if (detectedAdminType === 'institute') {
           profileResponse = await instituteAdminAPI.getProfile();
+        } else {
+          throw new Error('Unable to determine admin type');
         }
         
         console.log('Protected route profile response:', profileResponse);
 
         // Handle backend response format
-        const userData = profileResponse.admin || profileResponse.user || profileResponse;
+        // profileResponse could be the data directly or wrapped in .data
+        const userData = profileResponse?.admin || profileResponse?.user || profileResponse?.data?.admin || profileResponse?.data?.user || profileResponse;
+        console.log('Extracted user data:', userData);
         
         if (!userData) {
           throw new Error('Failed to get profile - no user data');
         }
 
         // Verify user has correct admin role
-        if (adminType === 'super' && !adminAuth.isSuperAdmin(userData) && userData.role !== 'SUPER_ADMIN') {
+        if (detectedAdminType === 'super' && !adminAuth.isSuperAdmin(userData) && userData.role !== 'SUPER_ADMIN') {
           throw new Error('Unauthorized: Not a super admin');
         }
 
-        if (adminType === 'institute' && !adminAuth.isInstituteAdmin(userData) && userData.role !== 'INSTITUTE_ADMIN') {
+        if (detectedAdminType === 'institute' && !adminAuth.isInstituteAdmin(userData) && userData.role !== 'INSTITUTE_ADMIN') {
           throw new Error('Unauthorized: Not an institute admin');
         }
 
@@ -58,7 +73,7 @@ const AdminProtectedRoute = ({ children, adminType }) => {
         setLoading(false);
         
         // Redirect to appropriate login page
-        const loginPath = adminType === 'super' 
+        const loginPath = (adminType === 'super' || router.pathname.includes('/admin/super-admin'))
           ? '/admin/super-admin/login' 
           : '/admin/institute-admin/login';
         

@@ -25,6 +25,7 @@ export const userAPI = {
   // Institutions
   getInstitutions: async () => {
     const response = await api.get('/users/institutions');
+    console.log(response.data)
     return response.data;
   },
 

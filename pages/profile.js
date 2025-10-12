@@ -18,7 +18,7 @@ export default function Profile({ showToast }) {
     name: '',
     email: '',
     institute: '',
-    githubUsername: '',
+    githubUsername: '', 
     bio: '',
     role: 'STUDENT',
   }); 
@@ -30,6 +30,13 @@ export default function Profile({ showToast }) {
   const [associationStatus, setAssociationStatus] = useState('NONE'); // NONE, PENDING, APPROVED, REJECTED
   const [institutionRequest, setInstitutionRequest] = useState(null);
   const [institutions, setInstitutions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredInstitutions = institutions.filter(inst => {
+    const term = searchTerm.toLowerCase();
+    return inst.displayName.toLowerCase().includes(term)
+      || inst.address?.district?.toLowerCase().includes(term)
+      || inst.address?.state?.toLowerCase().includes(term);
+  });
   
   // Portfolio visibility state
   const [portfolioItems, setPortfolioItems] = useState({
@@ -853,33 +860,46 @@ const fetchContactInfo = async () => {
                     </div>
 
                     <div>
-                      <label htmlFor="institute" className="block text-sm font-medium text-gray-700">
-                        Institution/Organization
-                      </label>
-                      <select
-                        id="institute"
-                        name="institute"
-                        className="form-input mt-1"
-                        value={user.institute || ''}
-                        onChange={handleChange}
-                        disabled={associationStatus === 'PENDING' || associationStatus === 'APPROVED'}
-                        required
-                      >
-                        <option value="">Select an institution...</option>
-                        {institutions.map((institution) => (
-                          <option key={institution._id || institution.id} value={institution.name || institution.displayName}>
-                            {institution.displayName || institution.name}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="mt-2 text-sm text-gray-500">
-                        {associationStatus === 'APPROVED' 
-                          ? 'Your institution association has been verified and cannot be changed. Contact support if changes are needed.'
-                          : user.role === 'STUDENT' 
-                          ? 'Select your institution from the list. A verifier from this institution will need to approve your request.'
-                          : 'Select your institution to connect with students from the same organization.'
-                        }
-                      </p>
+                      <label htmlFor="institutionSearch" className="block text-sm font-medium text-gray-700">Institution/Organization</label>
+                      <input
+                        type="text"
+                        id="institutionSearch"
+                        name="institutionSearch"
+                        placeholder="Search by name, district, or state..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="form-input mt-1 w-full"
+                      />
+                      <ul className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md">
+                        {filteredInstitutions.length > 0 ? filteredInstitutions.map(inst => (
+                          <li key={inst.id} className="flex items-center justify-between px-3 py-2 hover:bg-gray-50">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{inst.displayName}</p>
+                              <p className="text-xs text-gray-500">{inst.address?.district}, {inst.address?.state}</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {inst.claimed ? (
+                                <span className="text-green-600 text-xs font-semibold">Verified</span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => router.push(`/institution-claim?instId=${inst.id}`)}
+                                  className="text-red-600 text-xs underline"
+                                >
+                                  Claim
+                                </button>
+                              )}
+                            </div>
+                          </li>
+                        )) : (
+                          <li className="px-3 py-2 text-sm text-gray-500">No institutions found</li>
+                        )}
+                      </ul>
+                      <div className="mt-2">
+                        <Link href="/institution-create" className="text-sm text-primary-600 underline">
+                          Can't find your institution?
+                        </Link>
+                      </div>
                     </div>
 
                     {user.role === 'STUDENT' && (
@@ -1246,7 +1266,7 @@ const fetchContactInfo = async () => {
                   {(!portfolioItems?.experiences?.length && !portfolioItems?.education?.length && !portfolioItems?.projects?.length) && (
                     <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
                       <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 12a3 3 0 11-6 0 3 3 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                       <h3 className="mt-4 text-lg font-medium text-gray-900">No items to display</h3>
