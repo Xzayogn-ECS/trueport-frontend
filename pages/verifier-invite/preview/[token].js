@@ -521,12 +521,12 @@ export default function VerifierInvitePreview({ showToast }) {
               <p className="text-gray-700 mb-4">
                 Welcome to TruePortMe! You can now access your verifier dashboard.
               </p>
-              <a 
+              <Link
                 href="/verifier/dashboard" 
                 className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
               >
                 Go to Dashboard
-              </a>
+              </Link>
             </div>
           </div>
         )}
