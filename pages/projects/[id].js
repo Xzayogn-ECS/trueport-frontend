@@ -5,9 +5,8 @@ import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import SidebarLayout from '../../components/SidebarLayout';
 import api from '../../utils/api';
-import { showToast } from '../../components/Toast';
 
-export default function ProjectDetail() {
+export default function ProjectDetail({ showToast }) {
   const router = useRouter();
   const { id } = router.query;
   const [project, setProject] = useState(null);

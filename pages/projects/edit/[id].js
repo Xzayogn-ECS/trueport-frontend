@@ -4,7 +4,6 @@ import Head from 'next/head';
 import ProtectedRoute from '../../../components/ProtectedRoute';
 import api from '../../../utils/api';
 import AddCollaboratorModal from '../../../components/AddCollaboratorModal';
-import { showToast } from '../../../components/Toast';
 
 import CreatableSelect from 'react-select/creatable';
 
