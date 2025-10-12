@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Cookies from 'js-cookie';
 import api from '../../../utils/api';
+import Link from 'next/link';
 
 export default function VerifierInvitePreview({ showToast }) {
   const router = useRouter();
@@ -498,7 +499,7 @@ export default function VerifierInvitePreview({ showToast }) {
               <div className="mt-6">
                 <Link
                   href="/verifier/dashboard" 
-                  className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                  clas  sName="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
                 >
                   Go to Your Dashboard
                 </Link>
