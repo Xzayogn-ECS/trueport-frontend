@@ -197,7 +197,7 @@ export default function Dashboard({ showToast }) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 flex-wrap">
                             <div className="font-semibold text-gray-900">{exp.role || exp.title || exp.position}</div>
-                            <div className="text-sm text-gray-500">@ {exp.company}</div>
+                            <div className="text-sm text-gray-500">@ {exp.organization || exp.company}</div>
                           </div>
                           <div className="text-xs text-gray-400 mt-1">
                             {exp.startDate ? new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : ''} 

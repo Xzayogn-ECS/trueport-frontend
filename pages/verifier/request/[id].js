@@ -210,10 +210,10 @@ export default function VerificationRequestDetail({ showToast }) {
                 </div>
               )}
 
-              {request.item?.company && (
+              { (request.item?.organization || request.item?.company) && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Company</label>
-                  <p className="mt-1 text-sm text-gray-900">{request.item.company}</p>
+                  <label className="block text-sm font-medium text-gray-500">Organization</label>
+                  <p className="mt-1 text-sm text-gray-900">{request.item.organization || request.item.company}</p>
                 </div>
               )}
 

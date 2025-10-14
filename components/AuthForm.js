@@ -15,8 +15,29 @@ const AuthForm = ({ type = 'login' }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  
+  // Password validation states
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  });
 
   const isLogin = type === 'login';
+  
+  // Validate password on change
+  const validatePassword = (password) => {
+    setPasswordValidation({
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
+  };
 
   // Listen for messages from Google OAuth popup
 useEffect(() => {
@@ -95,16 +116,32 @@ useEffect(() => {
   }, [type, isLogin]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
+    // Validate password in real-time for registration
+    if (name === 'password' && !isLogin) {
+      validatePassword(value);
+    }
   };
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setError('');
+
+  // Validate password requirements for registration
+  if (!isLogin) {
+    const allValid = Object.values(passwordValidation).every(v => v === true);
+    if (!allValid) {
+      setError('Please meet all password requirements');
+      setLoading(false);
+      return;
+    }
+  }
 
   try {
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
@@ -208,7 +245,82 @@ const handleGoogleAuth = () => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                onFocus={() => !isLogin && setPasswordFocused(true)}
+                onBlur={() => !isLogin && setPasswordFocused(false)}
               />
+              
+              {/* Password Requirements - Only show during registration when focused */}
+              {!isLogin && passwordFocused && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <p className="text-xs font-medium text-gray-700 mb-2">Password must contain:</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center text-xs">
+                      <div className={`w-4 h-4 rounded border mr-2 flex items-center justify-center ${passwordValidation.minLength ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                        {passwordValidation.minLength && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className={passwordValidation.minLength ? 'text-green-700' : 'text-gray-600'}>
+                        At least 8 characters
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <div className={`w-4 h-4 rounded border mr-2 flex items-center justify-center ${passwordValidation.hasUpperCase ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                        {passwordValidation.hasUpperCase && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className={passwordValidation.hasUpperCase ? 'text-green-700' : 'text-gray-600'}>
+                        One uppercase letter (A-Z)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <div className={`w-4 h-4 rounded border mr-2 flex items-center justify-center ${passwordValidation.hasLowerCase ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                        {passwordValidation.hasLowerCase && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className={passwordValidation.hasLowerCase ? 'text-green-700' : 'text-gray-600'}>
+                        One lowercase letter (a-z)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <div className={`w-4 h-4 rounded border mr-2 flex items-center justify-center ${passwordValidation.hasNumber ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                        {passwordValidation.hasNumber && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className={passwordValidation.hasNumber ? 'text-green-700' : 'text-gray-600'}>
+                        One number (0-9)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <div className={`w-4 h-4 rounded border mr-2 flex items-center justify-center ${passwordValidation.hasSpecialChar ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                        {passwordValidation.hasSpecialChar && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className={passwordValidation.hasSpecialChar ? 'text-green-700' : 'text-gray-600'}>
+                        One special character (!@#$%^&*...)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

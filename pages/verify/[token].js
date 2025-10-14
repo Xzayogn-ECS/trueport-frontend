@@ -139,7 +139,10 @@ export default function VerifyToken({ showToast }) {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">{experience.title}</h2>
-                <p className="text-gray-600 mb-1">{experience.role}</p>
+                  <p className="text-gray-600 mb-1">{experience.role}</p>
+                  {experience.organization && (
+                    <p className="text-gray-500">@ {experience.organization}</p>
+                  )}
                 <p className="text-sm text-gray-500">
                   {formatDate(experience.startDate)} - {experience.endDate ? formatDate(experience.endDate) : 'Present'}
                 </p>

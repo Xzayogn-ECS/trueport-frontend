@@ -175,9 +175,9 @@ export default function Experiences({ showToast }) {
             </div>
           ) : experiences.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
                 {experiences.map((experience, idx) => (
-                  <div key={experience._id} className="animate-fade-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                  <div key={experience._id} className="animate-fade-up h-full" style={{ animationDelay: `${idx * 50}ms` }}>
                     <ExperienceCard
                       experience={experience}
                       showActions={true}

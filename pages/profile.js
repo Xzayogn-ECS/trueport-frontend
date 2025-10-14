@@ -31,6 +31,8 @@ export default function Profile({ showToast }) {
   const [institutionRequest, setInstitutionRequest] = useState(null);
   const [institutions, setInstitutions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState(null);
+  const [showInstitutionResults, setShowInstitutionResults] = useState(false);
   const filteredInstitutions = institutions.filter(inst => {
     const term = searchTerm.toLowerCase();
     return inst.displayName.toLowerCase().includes(term)
@@ -306,17 +308,20 @@ const fetchContactInfo = async () => {
     try {
       if (user.role === 'STUDENT') {
         // For students, submit a request for approval
-        const response = await api.post('/associations/request', {
-          institute: user.institute,
-          requestedRole: user.role
-        });
+        // Send the institute display name string (backend expects institute name)
+        const payload = { institute: user.institute || searchTerm, requestedRole: user.role };
+        const response = await api.post('/associations/request', payload);
         setAssociationStatus('PENDING');
         setInstitutionRequest(response.data.request);
         showToast('Institution association request submitted! Waiting for verifier approval.', 'success');
       } else {
         // For verifiers, update directly (they can self-approve)
-        const response = await api.put('/users/me', user);
-        setUser(response.data.user);
+        // For verifiers, send the institute display name string
+        const verifierPayload = { institute: user.institute || searchTerm };
+        const response = await api.put('/users/me', verifierPayload);
+        // refresh full user object after update
+        const meRes = await api.get('/users/me');
+        setUser(meRes.data.user);
         setAssociationStatus('APPROVED');
         showToast('Institution association updated successfully!', 'success');
       }
@@ -861,38 +866,71 @@ const fetchContactInfo = async () => {
 
                     <div>
                       <label htmlFor="institutionSearch" className="block text-sm font-medium text-gray-700">Institution/Organization</label>
-                      <input
-                        type="text"
-                        id="institutionSearch"
-                        name="institutionSearch"
-                        placeholder="Search by name, district, or state..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="form-input mt-1 w-full"
-                      />
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          id="institutionSearch"
+                          name="institutionSearch"
+                          placeholder="Search by name, district, or state..."
+                          value={searchTerm}
+                          onChange={e => { setSearchTerm(e.target.value); setShowInstitutionResults(false); setSelectedInstitutionId(null); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setShowInstitutionResults(true); } }}
+                          className="form-input mt-1 w-full"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowInstitutionResults(true)}
+                          className="btn-secondary mt-1"
+                        >
+                          Search
+                        </button>
+                      </div>
                       <ul className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md">
-                        {filteredInstitutions.length > 0 ? filteredInstitutions.map(inst => (
-                          <li key={inst.id} className="flex items-center justify-between px-3 py-2 hover:bg-gray-50">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{inst.displayName}</p>
-                              <p className="text-xs text-gray-500">{inst.address?.district}, {inst.address?.state}</p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              {inst.claimed ? (
-                                <span className="text-green-600 text-xs font-semibold">Verified</span>
-                              ) : (
+                        {showInstitutionResults ? (
+                          filteredInstitutions.length > 0 ? filteredInstitutions.map(inst => (
+                            <li
+                              key={inst.id}
+                              className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                // Select when clicking the row
+                                setUser(prev => ({ ...prev, institute: inst.displayName }));
+                                setSelectedInstitutionId(inst.id);
+                                // keep the selected institution name visible in the search box
+                                setSearchTerm(inst.displayName);
+                                setShowInstitutionResults(false);
+                              }}
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{inst.displayName}</p>
+                                <p className="text-xs text-gray-500">{inst.address?.district}, {inst.address?.state}</p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {inst.claimed ? (
+                                  <span className="text-green-600 text-xs font-semibold">Verified</span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); router.push(`/institution-claim?instId=${inst.id}`); }}
+                                    className="text-red-600 text-xs underline"
+                                  >
+                                    Claim
+                                  </button>
+                                )}
+
                                 <button
                                   type="button"
-                                  onClick={() => router.push(`/institution-claim?instId=${inst.id}`)}
-                                  className="text-red-600 text-xs underline"
+                                  onClick={(e) => { e.stopPropagation(); setUser(prev => ({ ...prev, institute: inst.displayName })); setSelectedInstitutionId(inst.id); setSearchTerm(inst.displayName); setShowInstitutionResults(false); }}
+                                  className={`text-sm px-2 py-1 rounded ${selectedInstitutionId === inst.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                                 >
-                                  Claim
+                                  {selectedInstitutionId === inst.id ? 'Selected' : 'Select'}
                                 </button>
-                              )}
-                            </div>
-                          </li>
-                        )) : (
-                          <li className="px-3 py-2 text-sm text-gray-500">No institutions found</li>
+                              </div>
+                            </li>
+                          )) : (
+                            <li className="px-3 py-2 text-sm text-gray-500">No institutions found</li>
+                          )
+                        ) : (
+                          <li className="px-3 py-2 text-sm text-gray-500">Click Search to show results</li>
                         )}
                       </ul>
                       <div className="mt-2">
@@ -968,7 +1006,7 @@ const fetchContactInfo = async () => {
                       <button
                         type="submit"
                         className="btn-primary"
-                        disabled={saving || !user.institute || associationStatus === 'PENDING'}
+                        disabled={saving || !(user.institute || selectedInstitutionId) || associationStatus === 'PENDING'}
                       >
                         {saving ? 'Submitting...' : 
                          user.role === 'STUDENT' ? 'Submit Request' : 'Save Association'}

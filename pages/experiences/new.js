@@ -18,7 +18,7 @@ export default function NewExperience({ showToast }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    role: '',
+    organization: '',
     startDate: '',
     endDate: '',
     tags: [],
@@ -106,18 +106,19 @@ export default function NewExperience({ showToast }) {
                 />
               </div>
 
+
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                  Role/Position *
+                <label htmlFor="organization" className="block text-sm font-medium text-gray-700">
+                  Organization *
                 </label>
                 <input
                   type="text"
-                  id="role"
-                  name="role"
+                  id="organization"
+                  name="organization"
                   required
                   className="form-input mt-1"
-                  placeholder="e.g., Software Engineer Intern"
-                  value={formData.role}
+                  placeholder="e.g., TechCorp"
+                  value={formData.organization}
                   onChange={handleChange}
                 />
               </div>

@@ -9,11 +9,12 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
     title, 
     description, 
     role, 
+    organization,
     startDate, 
     endDate, 
     tags = [], 
     attachments = [], 
-    verified, 
+    verified,  
     verifiedAt 
   } = experience;
 
@@ -25,11 +26,14 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
   };
 
   return (
-    <div className="card">
+    <div className="card h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-3 sm:mb-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 break-words">{title}</h3>
           <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2 break-words">{role}</p>
+          {organization && (
+            <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2 break-words">@ {organization}</p>
+          )}
           <p className="text-xs sm:text-sm text-gray-500">
             {formatDate(startDate)} - {endDate ? formatDate(endDate) : 'Present'}
           </p>
@@ -101,7 +105,7 @@ const ExperienceCard = ({ experience, showActions = false, onEdit, onDelete, onR
       )}
 
       {showActions && (
-        <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4 border-t border-gray-200">
+        <div className="mt-auto flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4 border-t border-gray-200">
           <button
             onClick={onEdit}
             className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"

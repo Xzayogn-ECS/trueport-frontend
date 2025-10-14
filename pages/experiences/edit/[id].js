@@ -23,7 +23,7 @@ export default function EditExperience({ showToast }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    role: '',
+    organization: '',
     startDate: '',
     endDate: '',
     tags: [],
@@ -55,7 +55,7 @@ export default function EditExperience({ showToast }) {
       setFormData({
         title: experience.title || '',
         description: experience.description || '',
-        role: experience.role || '',
+          organization: experience.organization || experience.company || '',
         startDate: experience.startDate ? experience.startDate.split('T')[0] : '',
         endDate: experience.endDate ? experience.endDate.split('T')[0] : '',
         tags: tagsArr,
@@ -158,18 +158,18 @@ export default function EditExperience({ showToast }) {
                 />
               </div>
 
+
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                  Role/Position *
+                <label htmlFor="organization" className="block text-sm font-medium text-gray-700">
+                  Organization
                 </label>
                 <input
                   type="text"
-                  id="role"
-                  name="role"
-                  required
+                  id="organization"
+                  name="organization"
                   className="form-input mt-1"
-                  placeholder="e.g., Software Engineer Intern"
-                  value={formData.role}
+                  placeholder="e.g., TechCorp"
+                  value={formData.organization}
                   onChange={handleChange}
                 />
               </div>

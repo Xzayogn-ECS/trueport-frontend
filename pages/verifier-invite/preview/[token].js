@@ -257,10 +257,10 @@ export default function VerifierInvitePreview({ showToast }) {
                         <p className="mt-1 text-sm text-gray-900">{requestedInfo.role}</p>
                       </div>
                     )}
-                    {requestedInfo.company && (
+                    {(requestedInfo.organization || requestedInfo.company) && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500">Company</label>
-                        <p className="mt-1 text-sm text-gray-900">{requestedInfo.company}</p>
+                        <label className="block text-sm font-medium text-gray-500">Organization</label>
+                        <p className="mt-1 text-sm text-gray-900">{requestedInfo.organization || requestedInfo.company}</p>
                       </div>
                     )}
                   </>
