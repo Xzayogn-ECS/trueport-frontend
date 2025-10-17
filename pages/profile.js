@@ -192,23 +192,32 @@ const fetchContactInfo = async () => {
   }
 };
   const handleVisibilityToggle = async (itemType, itemId, currentVisibility) => {
-    try {
-      const newVisibility = !currentVisibility;
-      await userAPI.updateItemVisibility(itemType, itemId, newVisibility);
-      
-      // Update local state
-      setPortfolioItems(prev => ({
+    const newVisibility = !currentVisibility;
+    // Map API item types to local state keys
+    const stateKey = itemType === 'experience' ? 'experiences' : itemType === 'project' ? 'projects' : 'education';
+
+    // Optimistic UI update
+    setPortfolioItems(prev => {
+      const list = Array.isArray(prev[stateKey]) ? prev[stateKey] : [];
+      return {
         ...prev,
-        [itemType]: Array.isArray(prev[itemType]) ? prev[itemType].map(item => 
-          (item.id || item._id) === itemId 
-            ? { ...item, isPublic: newVisibility }
-            : item
-        ) : []
-      }));
-      
+        [stateKey]: list.map(item => (item.id || item._id) === itemId ? { ...item, isPublic: newVisibility } : item)
+      };
+    });
+
+    try {
+      await userAPI.updateItemVisibility(itemType, itemId, newVisibility);
       showToast(`Item ${newVisibility ? 'shown' : 'hidden'} from public portfolio`, 'success');
     } catch (error) {
       console.error('Failed to update visibility:', error);
+      // Revert optimistic update on failure
+      setPortfolioItems(prev => {
+        const list = Array.isArray(prev[stateKey]) ? prev[stateKey] : [];
+        return {
+          ...prev,
+          [stateKey]: list.map(item => (item.id || item._id) === itemId ? { ...item, isPublic: !newVisibility } : item)
+        };
+      });
       showToast('Failed to update visibility', 'error');
     }
   };
