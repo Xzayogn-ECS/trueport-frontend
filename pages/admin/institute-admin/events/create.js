@@ -20,7 +20,7 @@ export default function CreateEvent({ showToast }) {
     tags: '',
     attachments: '',
     awards: '',
-    status: 'DRAFT',
+    status: 'PUBLISHED',
     isPublic: true
   });
 
@@ -160,7 +160,8 @@ export default function CreateEvent({ showToast }) {
                       value={formData.status}
                       onChange={handleChange}
                       required
-                      className="input"
+                      disabled
+                      className="input bg-gray-100 cursor-not-allowed"
                     >
                       <option value="DRAFT">Draft</option>
                       <option value="PUBLISHED">Published</option>
@@ -242,7 +243,7 @@ export default function CreateEvent({ showToast }) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Organizer Name
+                    Organizer Name *
                   </label>
                   <input
                     type="text"

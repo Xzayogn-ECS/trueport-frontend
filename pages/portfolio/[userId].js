@@ -10,15 +10,40 @@ import { getDisplayName } from '../../utils/nameUtils'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Separator } from '../../components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip'
 
 // icons
-import { Github, Mail, Linkedin, ExternalLink, CheckCircle2, Star, Calendar, School, Building2, ArrowLeft, LinkIcon, Globe } from 'lucide-react'
+import {
+  Github, Mail, Linkedin, ExternalLink, CheckCircle2, Star,
+  Building2, ArrowLeft, Globe, Clock, XCircle
+} from 'lucide-react'
 
 // animation
 import { motion } from 'framer-motion'
+
+// ---- status helpers (no UI layout change, just text shown) ----
+const getItemStatus = (item) => {
+  const raw = item?.verificationStatus || (item?.verified ? 'verified' : 'not_verified')
+  if (raw === 'submitted') return 'submitted'
+  if (raw === 'verified') return 'verified'
+  return 'not_verified'
+}
+
+const STATUS_META = {
+  verified:   { label: 'Verified', Icon: CheckCircle2, cls: 'text-green-600' },
+  submitted:  { label: 'Submitted for verification', Icon: Clock, cls: 'text-amber-600' },
+  not_verified: { label: 'Not verified', Icon: XCircle, cls: 'text-slate-500' },
+}
+
+function StatusPill({ status }) {
+  const { label, Icon, cls } = STATUS_META[status] || STATUS_META.not_verified
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium ${cls}`}>
+      <Icon className='h-4 w-4' /> {label}
+    </span>
+  )
+}
+// ---------------------------------------------------------------
 
 export default function PublicPortfolio () {
   const router = useRouter()
@@ -46,7 +71,7 @@ export default function PublicPortfolio () {
       const fromSameOrigin = ref.startsWith(window.location.origin)
       const isDirectOpen = (!ref || !fromSameOrigin) && window.history.length <= 2
       setShowExitPreview(isDirectOpen)
-    } catch (e) {
+    } catch {
       setShowExitPreview(false)
     }
   }, [])
@@ -96,20 +121,22 @@ export default function PublicPortfolio () {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || (typeof window !== 'undefined' ? window.location.origin : '')
   const portfolioUrl = `${baseUrl}/portfolio/${userId || user?._id || user?.id || ''}`
 
-  const verifiedExperiences = useMemo(() => (Array.isArray(experiences) ? experiences.filter(e => e?.verified) : []), [experiences])
-  const verifiedEducation = useMemo(() => (Array.isArray(education) ? education.filter(e => e?.verified) : []), [education])
+  // Public items are those where isPublic !== false
+  const publicExperiences = useMemo(() => (Array.isArray(experiences) ? experiences.filter(e => e?.isPublic !== false) : []), [experiences])
+  const publicEducation = useMemo(() => (Array.isArray(education) ? education.filter(e => e?.isPublic !== false) : []), [education])
   const publicProjects = useMemo(() => (Array.isArray(projects) ? projects.filter(p => p?.isPublic !== false) : []), [projects])
 
-  const sortedEducation = useMemo(() => (verifiedEducation.length ? [...verifiedEducation].sort((a, b) => (b?.passingYear || 0) - (a?.passingYear || 0)) : []), [verifiedEducation])
+  const sortedEducation = useMemo(() => (publicEducation.length ? [...publicEducation].sort((a, b) => (b?.passingYear || 0) - (a?.passingYear || 0)) : []), [publicEducation])
   const sortedProjects = useMemo(() => ([...publicProjects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))), [publicProjects])
 
   const stats = useMemo(() => ({
-    verifiedEducation: verifiedEducation.length,
+    verifiedEducation: Array.isArray(education) ? education.filter(e => e?.verified).length : 0,
     publicProjects: publicProjects.length,
-    verifiedExperiences: verifiedExperiences.length
-  }), [verifiedEducation.length, publicProjects.length, verifiedExperiences.length])
+    verifiedExperiences: Array.isArray(experiences) ? experiences.filter(e => e?.verified).length : 0
+  }), [education, experiences, publicProjects.length])
 
-  // Build contact mapping
+  const verifiedExperiences = useMemo(() => (Array.isArray(experiences) ? experiences.filter(e => e?.verified) : []), [experiences])
+
   const publicContactInfo = useMemo(() => ({
     emailVisible: user?.contactVisibility?.email !== false,
     phoneVisible: user?.contactVisibility?.phone !== false,
@@ -121,7 +148,6 @@ export default function PublicPortfolio () {
     githubUsername: user?.contactInfo?.githubUsername || user?.githubUsername || ''
   }), [user])
 
-  // skills aggregation
   const skillsTop = useMemo(() => {
     const counts = {}
     try {
@@ -241,7 +267,7 @@ export default function PublicPortfolio () {
                   </div>
                 </div>
 
-                {/* quick stats + QR from your WCard */}
+                {/* quick stats + QR */}
                 <div className='w-full md:w-auto'>
                   <div className='hidden md:block'>
                     <WCard
@@ -286,7 +312,7 @@ export default function PublicPortfolio () {
         <div className='mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3'>
           {/* left */}
           <div className='lg:col-span-2 space-y-6'>
-            {!!verifiedExperiences.length && (
+            {!!publicExperiences.length && (
               <Card className='shadow-sm'>
                 <CardHeader className='pb-2'>
                   <CardTitle className='text-lg'>Verified Experiences</CardTitle>
@@ -295,40 +321,44 @@ export default function PublicPortfolio () {
                   <div className='relative pl-4 sm:pl-6'>
                     <div className='absolute left-1 top-0 bottom-0 w-px bg-gradient-to-b from-indigo-200 via-slate-200 to-transparent' />
                     <div className='space-y-5'>
-                      {verifiedExperiences.map((exp) => (
-                        <motion.div key={exp._id} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.25 }} className='relative'>
-                          <div className='absolute -left-[9px] top-1.5 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-100' />
-                          <div className='rounded-lg border border-slate-100 bg-slate-50/60 p-4'>
-                            <div className='flex flex-wrap items-start justify-between gap-3'>
-                              <div>
-                                <div className='flex flex-wrap items-center gap-2'>
-                                  <p className='font-medium text-slate-900'>{exp.title}</p>
-                                  {(exp.organization || exp.company) && (
-                                    <span className='text-sm text-slate-500'>@ {exp.organization || exp.company}</span>
-                                  )}
+                      {publicExperiences.map((exp) => {
+                        const st = getItemStatus(exp)
+                        return (
+                          <motion.div key={exp._id} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.25 }} className='relative'>
+                            <div className='absolute -left-[9px] top-1.5 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-100' />
+                            <div className='rounded-lg border border-slate-100 bg-slate-50/60 p-4'>
+                              <div className='flex flex-wrap items-start justify-between gap-3'>
+                                <div>
+                                  <div className='flex flex-wrap items-center gap-2'>
+                                    <p className='font-medium text-slate-900'>{exp.title}</p>
+                                    {(exp.organization || exp.company) && (
+                                      <span className='text-sm text-slate-500'>@ {exp.organization || exp.company}</span>
+                                    )}
+                                  </div>
+                                  <p className='mt-0.5 text-xs text-slate-500'>
+                                    {exp.startDate && formatDate(exp.startDate)}
+                                    {exp.endDate ? ` — ${formatDate(exp.endDate)}` : ' — Present'}
+                                  </p>
                                 </div>
-                                <p className='mt-0.5 text-xs text-slate-500'>
-                                  {exp.startDate && formatDate(exp.startDate)}
-                                  {exp.endDate ? ` — ${formatDate(exp.endDate)}` : ' — Present'}
-                                </p>
+
+                                {/* status pill (icon + full text) */}
+                                <StatusPill status={st} />
                               </div>
-                              <div className='flex items-center gap-1 text-xs font-medium text-green-600'>
-                                <CheckCircle2 className='h-4 w-4' /> verified
-                              </div>
+
+                              {exp.description && (
+                                <p className='mt-2 text-sm text-slate-700 whitespace-pre-wrap'>{exp.description}</p>
+                              )}
+                              {!!(exp.tags?.length) && (
+                                <div className='mt-2 flex flex-wrap gap-1.5'>
+                                  {exp.tags.slice(0, 6).map((t, i) => (
+                                    <Badge key={i} variant='outline' className='rounded-full'>{t}</Badge>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            {exp.description && (
-                              <p className='mt-2 text-sm text-slate-700 whitespace-pre-wrap'>{exp.description}</p>
-                            )}
-                            {!!(exp.tags?.length) && (
-                              <div className='mt-2 flex flex-wrap gap-1.5'>
-                                {exp.tags.slice(0, 6).map((t, i) => (
-                                  <Badge key={i} variant='outline' className='rounded-full'>{t}</Badge>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        )
+                      })}
                     </div>
                   </div>
                 </CardContent>
@@ -397,34 +427,28 @@ export default function PublicPortfolio () {
                 </CardHeader>
                 <CardContent>
                   <div className='space-y-3'>
-                    {sortedEducation.slice(0, 4).map((edu) => (
-                      <div key={edu._id || edu.id} className='rounded-lg border border-slate-100 bg-slate-50/60 p-3'>
-                        <div className='flex items-start justify-between gap-3'>
-                          <div>
-                            <p className='text-sm font-medium text-slate-900'>
-                              {edu.courseName || edu.degree || edu.title}
-                              {edu.courseType && <span className='text-slate-500'> ({edu.courseType})</span>}
-                            </p>
-                            <p className='mt-0.5 text-xs text-slate-600'>
-                              {edu.schoolOrCollege || edu.institute || edu.boardOrUniversity}
-                              {edu.passingYear && ` • Class of ${edu.passingYear}`}
-                            </p>
+                    {sortedEducation.slice(0, 4).map((edu) => {
+                      const st = getItemStatus(edu)
+                      return (
+                        <div key={edu._id || edu.id} className='rounded-lg border border-slate-100 bg-slate-50/60 p-3'>
+                          <div className='flex items-start justify-between gap-3'>
+                            <div>
+                              <p className='text-sm font-medium text-slate-900'>
+                                {edu.courseName || edu.degree || edu.title}
+                                {edu.courseType && <span className='text-slate-500'> ({edu.courseType})</span>}
+                              </p>
+                              <p className='mt-0.5 text-xs text-slate-600'>
+                                {edu.schoolOrCollege || edu.institute || edu.boardOrUniversity}
+                                {edu.passingYear && ` • Class of ${edu.passingYear}`}
+                              </p>
+                            </div>
+
+                            {/* show full status text here (no tooltip) */}
+                            <StatusPill status={st} />
                           </div>
-                          {edu.verified && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <CheckCircle2 className='h-4 w-4 text-green-600' />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className='text-xs'>Verified{edu.verifiedBy ? ` by ${edu.verifiedBy}` : ''}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </CardContent>
               </Card>

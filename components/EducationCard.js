@@ -23,7 +23,20 @@ const EducationCard = ({ education, showActions = false, onEdit, onDelete, onReq
 
   const getCourseTypeLabel = (type) => {
     const labels = {
+      'NUR': 'Nursery',
+      'LKG': 'LKG',
+      'UKG': 'UKG',
+      '1ST': '1st Grade',
+      '2ND': '2nd Grade',
+      '3RD': '3rd Grade',
+      '4TH': '4th Grade',
+      '5TH': '5th Grade',
+      '6TH': '6th Grade',
+      '7TH': '7th Grade',
+      '8TH': '8th Grade',
+      '9TH': '9th Grade',
       '10TH': '10th Grade',
+      '11TH': '11th Grade',
       '12TH': '12th Grade',
       'DIPLOMA': 'Diploma',
       'BACHELORS': "Bachelor's Degree",

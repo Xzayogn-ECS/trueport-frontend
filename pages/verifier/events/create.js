@@ -14,7 +14,7 @@ export default function CreateEvent({ showToast }) {
     title: '',
     description: '',
     eventType: 'WORKSHOP',
-    status: 'DRAFT',
+    status: 'PUBLISHED',
     startDate: '',
     endDate: '',
     location: '',
@@ -197,7 +197,8 @@ export default function CreateEvent({ showToast }) {
                       value={formData.status}
                       onChange={handleChange}
                       required
-                      className="input-primary w-full"
+                      disabled
+                      className="input-primary w-full bg-gray-100 cursor-not-allowed"
                     >
                       <option value="DRAFT">Draft</option>
                       <option value="PUBLISHED">Published</option>

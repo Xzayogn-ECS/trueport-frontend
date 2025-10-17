@@ -39,8 +39,9 @@ export default function EventDetail({ showToast }) {
 
   const fetchStudents = async () => {
     try {
-      const response = await api.get('/institute-admin/users', { params });
-      setStudents(response.data.students || []);
+      const response = await api.get('/institute-admin/users', { params: { role: 'STUDENT' } });
+      console.log(response.data.users);
+      setStudents(response.data.users || []);
     } catch (error) {
       console.error('Failed to fetch students:', error);
     }
@@ -90,6 +91,7 @@ export default function EventDetail({ showToast }) {
     try {
       setPushing(true);
       const response = await api.post(`/events/${id}/push-experiences`);
+      console.log(response);
       showToast(`Successfully created ${response.data.results.success} experiences!`, 'success');
       fetchEvent();
     } catch (error) {

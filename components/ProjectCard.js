@@ -56,9 +56,7 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
     projectType
   } = project;
 
-  // Use new title field or fall back to legacy projectName
   const displayTitle = title || projectName;
-  // Use new skillsUsed or fall back to legacy technologies
   const displaySkills = skillsUsed.length > 0 ? skillsUsed : technologies;
 
   const getCategoryLabel = (cat) => {
@@ -103,16 +101,15 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
   };
 
   return (
-    <div className="card overflow-hidden">
-      <div className="p-4 sm:p-6">
-        {/* Header with title and visibility badge */}
+    // make card a column flex with fixed full height so cards align
+    <div className="card overflow-hidden h-full flex flex-col">
+      {/* main content grows to equalize cards */}
+      <div className="p-4 sm:p-6 flex-1 flex flex-col">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3 sm:mb-4">
           <div className="flex-1 min-w-0">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 break-words">{displayTitle}</h3>
             {(category || projectType) && (
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                getCategoryColor(category || projectType)
-              }`}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(category || projectType)}`}>
                 {getCategoryLabel(category || projectType)}
               </span>
             )}
@@ -159,8 +156,8 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
           </div>
         )}
 
-        {/* Links */}
-        <div className="flex gap-1.5 sm:gap-2 mb-3 sm:mb-4 flex-wrap">
+        {/* Links - keep compact and avoid pushing footer */}
+        <div className="flex gap-1.5 sm:gap-2 mb-0 sm:mb-4 flex-wrap">
           {(links.githubUrl || repositoryUrl) && (
             <a
               href={links.githubUrl || repositoryUrl}
@@ -214,32 +211,32 @@ const ProjectCard = ({ project, showActions = false, onEdit, onDelete, showToast
             </a>
           )}
         </div>
-
-        {/* Actions */}
-        {showActions && (
-          <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4 border-t border-gray-200">
-            <button
-              onClick={onEdit}
-              className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Edit
-            </button>
-
-            <button
-              onClick={onDelete}
-              className="sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 text-xs sm:text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-            >
-              <svg className="w-4 h-4 sm:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-              <span className="ml-1 sm:hidden">Delete</span>
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Footer / Actions fixed at bottom so all cards look same height */}
+      {showActions && (
+        <div className="p-3 sm:p-4 border-t border-gray-200 flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={onEdit}
+            className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit
+          </button>
+
+          <button
+            onClick={onDelete}
+            className="sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 text-xs sm:text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+          >
+            <svg className="w-4 h-4 sm:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span className="ml-1 sm:hidden">Delete</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1120,7 +1120,7 @@ const fetchContactInfo = async () => {
             <div className="space-y-6" id="tab-portfolio">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Portfolio Visibility</h2>
-                <p className="text-gray-600">Control what appears on your public portfolio. Only verified items can be made visible.</p>
+                <p className="text-gray-600">Control what appears on your public portfolio. Use the toggles to show or hide any item; verified items will display a Verified badge.</p>
               </div>
 
               {portfolioLoading ? (
@@ -1160,28 +1160,24 @@ const fetchContactInfo = async () => {
                               </div>
                             </div>
                             <div className="ml-4">
-                              {experience.verified ? (
-                                <label className="flex items-center cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={experience.isPublic || false}
-                                    onChange={() => handleVisibilityToggle('experience', experience.id || experience._id, experience.isPublic || false)}
-                                    className="sr-only"
-                                  />
-                                  <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    experience.isPublic ? 'bg-primary-600' : 'bg-gray-200'
-                                  }`}>
-                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                      experience.isPublic ? 'translate-x-6' : 'translate-x-1'
-                                    }`} />
-                                  </div>
-                                  <span className="ml-2 text-sm text-gray-700">
-                                    {experience.isPublic ? 'Visible' : 'Hidden'}
-                                  </span>
-                                </label>
-                              ) : (
-                                <span className="text-sm text-gray-400">Only verified items can be shown</span>
-                              )}
+                              <label className="flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={experience.isPublic || false}
+                                  onChange={() => handleVisibilityToggle('experience', experience.id || experience._id, experience.isPublic || false)}
+                                  className="sr-only"
+                                />
+                                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  experience.isPublic ? 'bg-primary-600' : 'bg-gray-200'
+                                }`}>
+                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    experience.isPublic ? 'translate-x-6' : 'translate-x-1'
+                                  }`} />
+                                </div>
+                                <span className="ml-2 text-sm text-gray-700">
+                                  {experience.isPublic ? 'Visible' : 'Hidden'}
+                                </span>
+                              </label>
                             </div>
                           </div>
                         ))}
@@ -1222,28 +1218,24 @@ const fetchContactInfo = async () => {
                               </div>
                             </div>
                             <div className="ml-4">
-                              {edu.verified ? (
-                                <label className="flex items-center cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={edu.isPublic || false}
-                                    onChange={() => handleVisibilityToggle('education', edu.id || edu._id, edu.isPublic || false)}
-                                    className="sr-only"
-                                  />
-                                  <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    edu.isPublic ? 'bg-primary-600' : 'bg-gray-200'
-                                  }`}>
-                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                      edu.isPublic ? 'translate-x-6' : 'translate-x-1'
-                                    }`} />
-                                  </div>
-                                  <span className="ml-2 text-sm text-gray-700">
-                                    {edu.isPublic ? 'Visible' : 'Hidden'}
-                                  </span>
-                                </label>
-                              ) : (
-                                <span className="text-sm text-gray-400">Only verified items can be shown</span>
-                              )}
+                              <label className="flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={edu.isPublic || false}
+                                  onChange={() => handleVisibilityToggle('education', edu.id || edu._id, edu.isPublic || false)}
+                                  className="sr-only"
+                                />
+                                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  edu.isPublic ? 'bg-primary-600' : 'bg-gray-200'
+                                }`}>
+                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    edu.isPublic ? 'translate-x-6' : 'translate-x-1'
+                                  }`} />
+                                </div>
+                                <span className="ml-2 text-sm text-gray-700">
+                                  {edu.isPublic ? 'Visible' : 'Hidden'}
+                                </span>
+                              </label>
                             </div>
                           </div>
                         ))}

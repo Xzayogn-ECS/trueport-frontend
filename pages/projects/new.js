@@ -12,35 +12,30 @@ const PROJECT_CATEGORIES = {
   'MOBILE_APP': 'Mobile App',
   'DATA_SCIENCE': 'Data Science',
   'AI_ML_PROJECT': 'AI/ML Project',
-  
   // Design Projects
   'UI_UX_DESIGN': 'UI/UX Design',
   'GRAPHIC_DESIGN': 'Graphic Design',
   'PRODUCT_DESIGN': 'Product Design',
   'BRAND_IDENTITY': 'Brand Identity',
   'DIGITAL_ART': 'Digital Art',
-  
   // Business Projects
   'BUSINESS_PLAN': 'Business Plan',
   'MARKET_RESEARCH': 'Market Research',
   'STARTUP_PITCH': 'Startup Pitch',
   'MARKETING_CAMPAIGN': 'Marketing Campaign',
   'FINANCIAL_ANALYSIS': 'Financial Analysis',
-  
   // Academic Projects
   'RESEARCH_PAPER': 'Research Paper',
   'THESIS_PROJECT': 'Thesis Project',
   'CASE_STUDY': 'Case Study',
   'LAB_EXPERIMENT': 'Lab Experiment',
   'SURVEY_STUDY': 'Survey Study',
-  
   // Creative Projects
   'CREATIVE_WRITING': 'Creative Writing',
   'PHOTOGRAPHY': 'Photography',
   'VIDEO_PRODUCTION': 'Video Production',
   'MUSIC_COMPOSITION': 'Music Composition',
   'ART_PROJECT': 'Art Project',
-  
   // Other
   'COMMUNITY_SERVICE': 'Community Service',
   'INTERNSHIP_PROJECT': 'Internship Project',
@@ -62,6 +57,9 @@ const SKILL_OPTIONS = {
   creative: ['Creative Writing', 'Storytelling', 'Photography', 'Video Editing', 'Audio Production', 'Music Theory', 'Composition', 'Adobe Creative Suite', 'Final Cut Pro', 'Logic Pro', 'ProTools', 'Lighting', 'Color Grading', 'Script Writing'],
   general: ['Communication', 'Problem Solving', 'Critical Thinking', 'Time Management', 'Collaboration', 'Presentation Skills', 'Microsoft Office', 'Google Workspace', 'Project Planning', 'Documentation']
 };
+
+// 👇 NEW: all skills (unique) regardless of category
+const ALL_SKILLS = [...new Set(Object.values(SKILL_OPTIONS).flat())];
 
 export default function NewProject({ showToast }) {
   const router = useRouter();
@@ -86,7 +84,6 @@ export default function NewProject({ showToast }) {
     collaborators: ''
   });
   const [loading, setLoading] = useState(false);
-  const [techInput, setTechInput] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,36 +104,25 @@ export default function NewProject({ showToast }) {
     }
   };
 
-  const getSkillOptions = () => {
-    if (!formData.category) return SKILL_OPTIONS.general;
-    
-    if (TECH_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.tech, ...SKILL_OPTIONS.general];
-    if (DESIGN_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.design, ...SKILL_OPTIONS.general];
-    if (BUSINESS_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.business, ...SKILL_OPTIONS.general];
-    if (ACADEMIC_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.academic, ...SKILL_OPTIONS.general];
-    return [...SKILL_OPTIONS.creative, ...SKILL_OPTIONS.general];
-  };
+  // 🔁 Always return ALL skills (ignores domain)
+  const getSkillOptions = () => ALL_SKILLS;
 
-  const isTechProject = () => TECH_CATEGORIES.includes(formData.category);
-  const isDesignProject = () => DESIGN_CATEGORIES.includes(formData.category);
-  const isBusinessProject = () => BUSINESS_CATEGORIES.includes(formData.category);
-  const isAcademicProject = () => ACADEMIC_CATEGORIES.includes(formData.category);
+  // const isTechProject = () => TECH_CATEGORIES.includes(formData.category);
+  // const isDesignProject = () => DESIGN_CATEGORIES.includes(formData.category);
+  // const isBusinessProject = () => BUSINESS_CATEGORIES.includes(formData.category);
+  // const isAcademicProject = () => ACADEMIC_CATEGORIES.includes(formData.category);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Clean up the data structure for API
       const submitData = {
         ...formData,
-        // Remove empty links
         links: Object.fromEntries(
-          Object.entries(formData.links).filter(([key, value]) => value.trim() !== '')
+          Object.entries(formData.links).filter(([_, v]) => (v || '').trim() !== '')
         ),
-        // Remove empty duration if both dates are empty
         ...(formData.duration.startDate || formData.duration.endDate ? { duration: formData.duration } : {}),
-        // Remove empty optional fields
         ...(formData.course ? { course: formData.course } : {}),
         ...(formData.supervisor ? { supervisor: formData.supervisor } : {}),
         ...(formData.collaborators ? { collaborators: formData.collaborators } : {})
@@ -284,9 +270,9 @@ export default function NewProject({ showToast }) {
               {/* Links Section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900">Project Links</h3>
-                
+
                 {/* Tech Project Links */}
-                {isTechProject() && (
+                {TECH_CATEGORIES.includes(formData.category) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="links.githubUrl" className="block text-sm font-medium text-gray-700">
@@ -320,7 +306,7 @@ export default function NewProject({ showToast }) {
                 )}
 
                 {/* Design Project Links */}
-                {isDesignProject() && (
+                {DESIGN_CATEGORIES.includes(formData.category) && (
                   <div>
                     <label htmlFor="links.portfolioUrl" className="block text-sm font-medium text-gray-700">
                       Portfolio URL
@@ -330,7 +316,7 @@ export default function NewProject({ showToast }) {
                       id="links.portfolioUrl"
                       name="links.portfolioUrl"
                       className="form-input mt-1"
-                      placeholder="https://behance.net/gallery/123456/project or https://dribbble.com/shots/123456"
+                      placeholder="https://behance.net/... or https://dribbble.com/shots/..."
                       value={formData.links.portfolioUrl}
                       onChange={handleChange}
                     />
@@ -338,7 +324,7 @@ export default function NewProject({ showToast }) {
                 )}
 
                 {/* Business/Academic Project Links */}
-                {(isBusinessProject() || isAcademicProject()) && (
+                {(BUSINESS_CATEGORIES.includes(formData.category) || ACADEMIC_CATEGORIES.includes(formData.category)) && (
                   <div>
                     <label htmlFor="links.documentUrl" className="block text-sm font-medium text-gray-700">
                       Document URL
@@ -348,7 +334,7 @@ export default function NewProject({ showToast }) {
                       id="links.documentUrl"
                       name="links.documentUrl"
                       className="form-input mt-1"
-                      placeholder="https://drive.google.com/document/123 or https://dropbox.com/s/file.pdf"
+                      placeholder="https://drive.google.com/... or https://dropbox.com/s/file.pdf"
                       value={formData.links.documentUrl}
                       onChange={handleChange}
                     />
@@ -357,7 +343,7 @@ export default function NewProject({ showToast }) {
               </div>
 
               {/* Academic Fields */}
-              {isAcademicProject() && (
+              {ACADEMIC_CATEGORIES.includes(formData.category) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="course" className="block text-sm font-medium text-gray-700">
@@ -425,7 +411,7 @@ export default function NewProject({ showToast }) {
                   formatCreateLabel={(input) => `Add "${input}"`}
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Select relevant skills or add custom ones. Skills will be suggested based on your project category.
+                  Full skill list shown regardless of category. Add more by typing.
                 </p>
               </div>
 
@@ -440,12 +426,12 @@ export default function NewProject({ showToast }) {
                   required
                   rows={6}
                   className="form-textarea mt-1"
-                  placeholder="What did you learn from this project? What challenges did you face and how did you overcome them? What insights did you gain?"
+                  placeholder="What did you learn? Challenges? Outcomes?"
                   value={formData.learnings}
                   onChange={handleChange}
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Share your genuine learning experience and key takeaways from this project.
+                  Share your genuine learning experience and key takeaways.
                 </p>
               </div>
 
@@ -459,11 +445,11 @@ export default function NewProject({ showToast }) {
                     <div className="mt-2 text-sm text-blue-700">
                       <ul className="list-disc list-inside space-y-1">
                         <li>Projects showcase your individual work and creativity</li>
-                        <li>Provide relevant links (repository, portfolio, documents) to demonstrate your work</li>
-                        <li>Skills listed should genuinely reflect those used in the project</li>
-                        <li>Learning insights help others understand your growth and development</li>
-                        <li>Projects are displayed based on your privacy settings</li>
-                        <li>No verification required - your work speaks for itself!</li>
+                        <li>Provide relevant links (repository, portfolio, documents)</li>
+                        <li>Skills should genuinely reflect those used</li>
+                        <li>Learning insights matter</li>
+                        <li>Privacy settings control visibility</li>
+                        <li>No verification required for projects</li>
                       </ul>
                     </div>
                   </div>

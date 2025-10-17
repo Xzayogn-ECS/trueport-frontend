@@ -206,16 +206,8 @@ export default function EditProject({ showToast }) {
       });
     }
   };
-
-  const getSkillOptions = () => {
-    if (!formData.category) return SKILL_OPTIONS.general;
-    
-    if (TECH_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.tech, ...SKILL_OPTIONS.general];
-    if (DESIGN_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.design, ...SKILL_OPTIONS.general];
-    if (BUSINESS_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.business, ...SKILL_OPTIONS.general];
-    if (ACADEMIC_CATEGORIES.includes(formData.category)) return [...SKILL_OPTIONS.academic, ...SKILL_OPTIONS.general];
-    return [...SKILL_OPTIONS.creative, ...SKILL_OPTIONS.general];
-  };
+const ALL_SKILLS = [...new Set(Object.values(SKILL_OPTIONS).flat())];
+  const getSkillOptions = () => ALL_SKILLS;
 
   const isTechProject = () => TECH_CATEGORIES.includes(formData.category);
   const isDesignProject = () => DESIGN_CATEGORIES.includes(formData.category);

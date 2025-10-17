@@ -32,6 +32,7 @@ export const userAPI = {
   // Portfolio Visibility Management
   getPortfolioItems: async () => {
     const response = await api.get('/users/me/portfolio-items');
+    console.log("Portfolio items are", response.data);
     return response.data;
   },
 

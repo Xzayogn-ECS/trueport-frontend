@@ -130,21 +130,29 @@ export default function AdminSidebarLayout({ children, title = '' }) {
                 : router.pathname === it.href || router.pathname.startsWith(`${it.href}/`);
               
               const handleNavClick = () => {
-                if (isHashNav) {
-                  if (it.hash) {
-                    // Navigate to hash on same page
-                    window.location.hash = it.hash;
-                  } else {
-                    // Remove hash for overview/dashboard
-                    const url = window.location.pathname + window.location.search;
-                    history.replaceState(null, '', url);
-                    setCurrentHash('');
-                    // Trigger hashchange for the dashboard to update
-                    window.dispatchEvent(new HashChangeEvent('hashchange'));
-                  }
-                } else {
+                if (!isHashNav) {
                   // Regular navigation - let Link handle it
                   return;
+                }
+
+                // For hash-based dashboard sections, ensure we navigate to the dashboard route
+                const dashboardBase = '/admin/institute-admin/dashboard';
+                if (router.pathname !== dashboardBase) {
+                  // Navigate to the dashboard page with hash via router to ensure route change
+                  router.push(it.href);
+                  return;
+                }
+
+                // We're already on the dashboard; update hash in-place
+                if (it.hash) {
+                  window.location.hash = it.hash;
+                } else {
+                  // Remove hash for overview/dashboard
+                  const url = window.location.pathname + window.location.search;
+                  history.replaceState(null, '', url);
+                  setCurrentHash('');
+                  // Trigger hashchange for the dashboard to update
+                  window.dispatchEvent(new HashChangeEvent('hashchange'));
                 }
               };
 

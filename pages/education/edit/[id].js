@@ -148,7 +148,20 @@ export default function EditEducation({ showToast }) {
                     value={formData.courseType}
                     onChange={handleChange}
                   >
+                    <option value="NUR">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    <option value="1ST">1st Grade</option>
+                    <option value="2ND">2nd Grade</option>
+                    <option value="3RD">3rd Grade</option>
+                    <option value="4TH">4th Grade</option>
+                    <option value="5TH">5th Grade</option>
+                    <option value="6TH">6th Grade</option>
+                    <option value="7TH">7th Grade</option>
+                    <option value="8TH">8th Grade</option>
+                    <option value="9TH">9th Grade</option>
                     <option value="10TH">10th Grade</option>
+                    <option value="11TH">11th Grade</option>
                     <option value="12TH">12th Grade</option>
                     <option value="DIPLOMA">Diploma</option>
                     <option value="BACHELORS">Bachelor's Degree</option>

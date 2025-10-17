@@ -103,6 +103,7 @@ export default function EventDetail({ showToast }) {
     try {
       setPushing(true);
       const response = await api.post(`/events/${id}/push-experiences`);
+      console.log(response);
       showToast(`Successfully created ${response.data.results.success} experiences!`, 'success');
       fetchEvent();
     } catch (error) {
