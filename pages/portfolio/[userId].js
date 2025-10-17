@@ -220,11 +220,16 @@ export default function PublicPortfolio () {
       </div>
 
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10'>
-        {showExitPreview && (
-          <button onClick={() => router.push('/')} className='mb-4 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800'>
-            <ArrowLeft className='mr-1.5 h-4 w-4' /> Exit preview
+        <div className='mb-4 flex items-center gap-3'>
+          <button onClick={() => router.push('/dashboard')} className='inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800'>
+            <ArrowLeft className='mr-1.5 h-4 w-4' /> Back to dashboard
           </button>
-        )}
+          {showExitPreview && (
+            <button onClick={() => router.push('/')} className='inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800'>
+              <ArrowLeft className='mr-1.5 h-4 w-4' /> Exit preview
+            </button>
+          )}
+        </div>
 
         {/* HERO */}
         <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
