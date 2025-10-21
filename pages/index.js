@@ -157,7 +157,7 @@ export default function Home() {
     <a href="tel:+919294830050" className="text-primary-600 hover:underline ml-1">+91 92948 30050</a>
   </div>
   <div>TruePortMe - Verified Digital Portfolio | Create and verify your professional experiences with TruePortMe</div>
-  <div className="text-gray-500">tpm.omnimise.com | Verified by <span className="font-medium text-primary-600">Yash Chitransh</span></div>
+  <div className="text-gray-500">tpm.omnimise.com</div>
 </footer>
       </main>
     </div>
