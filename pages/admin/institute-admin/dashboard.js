@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { instituteAdminAPI, adminAuth } from '../../../utils/adminAPI';
-import { getAuthToken, removeAuthToken } from '../../../utils/auth';
+import { instituteAdminAPI } from '../../../utils/adminAPI';
 import SingleToast from '../../../components/SingleToast';
 import AdminProtectedRoute from '../../../components/AdminProtectedRoute';
 import AdminSidebarLayout from '../../../components/AdminSidebarLayout';
@@ -36,11 +35,6 @@ function InstituteAdminDashboardContent() {
   const [csvResults, setCsvResults] = useState(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
-      router.push('/admin/institute-admin/login');
-      return;
-    }
     loadDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -85,7 +79,7 @@ function InstituteAdminDashboardContent() {
       // profile
       const profileResponse = await instituteAdminAPI.getProfile(); // GET /me
       const adminUser = resolveResponseUser(profileResponse);
-      if (!adminUser || !adminAuth.isInstituteAdmin(adminUser)) throw new Error('Unauthorized access');
+      if (!adminUser) throw new Error('Unauthorized access');
       setUser(adminUser);
 
       // institution
@@ -104,12 +98,7 @@ function InstituteAdminDashboardContent() {
 
     } catch (err) {
       console.error('Dashboard load error', err);
-      if (err?.response?.status === 401) {
-        removeAuthToken();
-        router.push('/admin/institute-admin/login');
-      } else {
-        setToast({ type: 'error', message: err?.response?.data?.message || err?.message || 'Failed to load data' });
-      }
+      setToast({ type: 'error', message: err?.response?.data?.message || err?.message || 'Failed to load data' });
     } finally {
       setLoading(false);
     }

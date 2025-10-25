@@ -67,6 +67,19 @@ export const userAPI = {
     const response = await api.put('/users/me/contact-visibility', visibilitySettings);
     return response.data;
   },
+
+  // Student profile update requests
+  createProfileUpdateRequest: async (changes) => {
+    // POST /api/users/me/profile-request
+    const response = await api.post('/users/me/profile-request', changes);
+    return response.data;
+  },
+
+  // Get user's own profile update requests (optional helper)
+  getMyProfileUpdateRequests: async () => {
+    const response = await api.get('/users/me/profile-requests');
+    return response.data;
+  },
 };
 
 export default userAPI;

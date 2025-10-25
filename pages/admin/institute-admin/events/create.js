@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import AdminProtectedRoute from '../../../../components/AdminProtectedRoute';
 import AdminSidebarLayout from '../../../../components/AdminSidebarLayout';
 import api from '../../../../utils/api';
+import eventsAPI from '../../../../utils/eventsAPI';
 
 export default function CreateEvent({ showToast }) {
   const router = useRouter();
@@ -24,6 +25,40 @@ export default function CreateEvent({ showToast }) {
     isPublic: true
   });
 
+  const [verifierQuery, setVerifierQuery] = useState('');
+  const [verifierResults, setVerifierResults] = useState([]);
+  const [selectedVerifiers, setSelectedVerifiers] = useState({ coordinators: [], inCharges: [], judges: [] });
+
+  // Prefill organizer name from current admin user (organization/institute)
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      const orgName = u?.institute || u?.organization || u?.name || '';
+      if (orgName) setFormData(prev => ({ ...prev, organizer: { ...prev.organizer, name: orgName } }));
+    } catch (e) { }
+  }, []);
+
+  // Load all verifiers on component mount
+  useEffect(() => {
+    searchVerifiers('');
+  }, []);
+
+  const searchVerifiers = async (q) => {
+    try {
+      // show all institute verifiers when query is empty
+      const params = q ? { search: q } : {};
+      const resp = await api.get('/users/institute-verifiers', { params });
+      console.log('Verifier search response:', resp.data);
+      // Backend returns { verifiers: [...] }, not { users: [...] }
+      const verifiers = resp.data.verifiers || resp.data.users || [];
+      console.log(`Found ${verifiers.length} verifiers`);
+      setVerifierResults(verifiers);
+    } catch (err) {
+      console.error('Verifier search failed', err);
+      setVerifierResults([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -37,8 +72,23 @@ export default function CreateEvent({ showToast }) {
       };
 
       const response = await api.post('/events', payload);
+      const eventId = response.data.event._id;
       showToast('Event created successfully!', 'success');
-      router.push(`/admin/institute-admin/events/${response.data.event._id}`);
+
+      // Assign selected verifiers to roles
+      try {
+        const tasks = [];
+        selectedVerifiers.coordinators.forEach(uid => tasks.push(eventsAPI.assignRole(eventId, 'coordinator', uid)));
+        selectedVerifiers.inCharges.forEach(uid => tasks.push(eventsAPI.assignRole(eventId, 'inCharge', uid)));
+        selectedVerifiers.judges.forEach(uid => tasks.push(eventsAPI.assignRole(eventId, 'judge', uid)));
+        if (tasks.length) await Promise.all(tasks);
+        showToast('Assigned selected roles to verifiers', 'success');
+      } catch (err) {
+        console.error('Failed to assign roles after event creation', err);
+        showToast('Event created but failed to assign some roles', 'warning');
+      }
+
+      router.push(`/admin/institute-admin/events/${eventId}`);
     } catch (error) {
       console.error('Failed to create event:', error);
       showToast(error.response?.data?.message || 'Failed to create event', 'error');
@@ -68,24 +118,18 @@ export default function CreateEvent({ showToast }) {
   };
 
   return (
-    <AdminProtectedRoute adminType="institute">
-      <Head>
-        <title>Create Event - Institute Admin - TruePortMe</title>
-      </Head>
-
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <Link
-              href="/admin/institute-admin/events"
-              className="text-primary-600 hover:text-primary-800 flex items-center mb-2"
-            >
-              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Events
-            </Link>
+    <AdminProtectedRoute>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          <Link
+            href="/admin/institute-admin/events"
+            className="text-primary-600 hover:text-primary-800 flex items-center mb-2"
+          >
+            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Events
+          </Link>
             <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
             <p className="mt-1 text-sm text-gray-600">
               Fill in the details below to create a new institutional event
@@ -324,6 +368,100 @@ export default function CreateEvent({ showToast }) {
             </div>
 
             {/* Submit Buttons */}
+            {/* Verifier Role Assignment */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Assign Verifier Roles (optional)</h2>
+              <p className="text-sm text-gray-500 mb-3">Search verifiers and assign them as Coordinators, In-Charges, or Judges for this event.</p>
+
+              <div className="flex items-center gap-2 mb-3">
+                <input
+                  type="text"
+                  value={verifierQuery}
+                  onChange={(e) => { setVerifierQuery(e.target.value); searchVerifiers(e.target.value); }}
+                  placeholder="Search verifiers by name or email"
+                  className="input flex-1"
+                />
+              </div>
+
+              {verifierResults.length > 0 ? (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {verifierResults.map(v => (
+                    <div key={v.id || v._id} className="flex items-center justify-between p-2 border rounded">
+                      <div>
+                        <div className="font-medium text-sm">{v.name}</div>
+                        <div className="text-xs text-gray-500">{v.email}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center text-xs">
+                          <input type="checkbox" checked={selectedVerifiers.coordinators.includes(v.id || v._id)} onChange={(e) => {
+                            const vid = v.id || v._id;
+                            setSelectedVerifiers(prev => ({ ...prev, coordinators: e.target.checked ? [...prev.coordinators, vid] : prev.coordinators.filter(id => id !== vid) }));
+                          }} className="mr-1" /> Coordinator
+                        </label>
+                        <label className="flex items-center text-xs">
+                          <input type="checkbox" checked={selectedVerifiers.inCharges.includes(v.id || v._id)} onChange={(e) => {
+                            const vid = v.id || v._id;
+                            setSelectedVerifiers(prev => ({ ...prev, inCharges: e.target.checked ? [...prev.inCharges, vid] : prev.inCharges.filter(id => id !== vid) }));
+                          }} className="mr-1" /> In-Charge
+                        </label>
+                        <label className="flex items-center text-xs">
+                          <input type="checkbox" checked={selectedVerifiers.judges.includes(v.id || v._id)} onChange={(e) => {
+                            const vid = v.id || v._id;
+                            setSelectedVerifiers(prev => ({ ...prev, judges: e.target.checked ? [...prev.judges, vid] : prev.judges.filter(id => id !== vid) }));
+                          }} className="mr-1" /> Judge
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">No verifiers. Search to find verifiers to assign.</div>
+              )}
+              {/* Selected lists preview */}
+              <div className="mt-4">
+                {selectedVerifiers.coordinators.length > 0 && (
+                  <div className="mb-2">
+                    <div className="text-xs text-gray-500 mb-1">Coordinators</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVerifiers.coordinators.map(id => {
+                        const v = verifierResults.find(x => (x.id || x._id) === id);
+                        return (
+                          <span key={id} className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded">{v?.name || id}</span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedVerifiers.inCharges.length > 0 && (
+                  <div className="mb-2">
+                    <div className="text-xs text-gray-500 mb-1">In-Charges</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVerifiers.inCharges.map(id => {
+                        const v = verifierResults.find(x => (x.id || x._id) === id);
+                        return (
+                          <span key={id} className="px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded">{v?.name || id}</span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {selectedVerifiers.judges.length > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Judges</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVerifiers.judges.map(id => {
+                        const v = verifierResults.find(x => (x.id || x._id) === id);
+                        return (
+                          <span key={id} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded">{v?.name || id}</span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="flex justify-end space-x-4">
               <Link
                 href="/admin/institute-admin/events"
@@ -341,7 +479,6 @@ export default function CreateEvent({ showToast }) {
             </div>
           </form>
         </div>
-      </div>
     </AdminProtectedRoute>
   );
 }

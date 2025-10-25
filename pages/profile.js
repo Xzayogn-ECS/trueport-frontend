@@ -33,6 +33,8 @@ export default function Profile({ showToast }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInstitutionId, setSelectedInstitutionId] = useState(null);
   const [showInstitutionResults, setShowInstitutionResults] = useState(false);
+  const [studentAssociationType, setStudentAssociationType] = useState('ACTIVE'); // ACTIVE or ALUMNI
+  const [addingAnotherAssociation, setAddingAnotherAssociation] = useState(false);
   const filteredInstitutions = institutions.filter(inst => {
     const term = searchTerm.toLowerCase();
     return inst.displayName.toLowerCase().includes(term)
@@ -67,6 +69,41 @@ export default function Profile({ showToast }) {
   });
   const [contactLoading, setContactLoading] = useState(false);
 
+  // Profile update request state (students)
+  // Initialize from user if available so the form reflects current values
+  const formatDateForInput = (iso) => {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      const yyyy = d.getFullYear();
+      const mm = `${d.getMonth() + 1}`.padStart(2, '0');
+      const dd = `${d.getDate()}`.padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const [profileRequest, setProfileRequest] = useState({
+    dob: user?.dob ? formatDateForInput(user.dob) : '',
+    classLevel: user?.classLevel || '',
+    section: user?.section || '',
+    house: user?.house || ''
+  });
+  // sync profile request form to freshly fetched user
+useEffect(() => {
+  if (!user) return;
+  setProfileRequest({
+    dob: user?.dob ? formatDateForInput(user.dob) : '',
+    classLevel: user?.classLevel || '',
+    section: user?.section || '',
+    house: user?.house || ''
+  });
+}, [user]); // run after fetchUser() updates `user`
+
+  
+  const [profileRequestLoading, setProfileRequestLoading] = useState(false);
   useEffect(() => {
     fetchUser();
     fetchEducation();
@@ -317,12 +354,16 @@ const fetchContactInfo = async () => {
     try {
       if (user.role === 'STUDENT') {
         // For students, submit a request for approval
-        // Send the institute display name string (backend expects institute name)
-        const payload = { institute: user.institute || searchTerm, requestedRole: user.role };
+        // Include associationType (ACTIVE | ALUMNI)
+        const payload = { institute: user.institute || searchTerm, requestedRole: user.role, associationType: studentAssociationType };
         const response = await api.post('/associations/request', payload);
-        setAssociationStatus('PENDING');
+        // ACTIVE requests affect associationStatus; ALUMNI requests do not change primary association
+        const assocType = response.data?.request?.associationType || studentAssociationType;
+        if (assocType === 'ACTIVE') {
+          setAssociationStatus('PENDING');
+        }
         setInstitutionRequest(response.data.request);
-        showToast('Institution association request submitted! Waiting for verifier approval.', 'success');
+        showToast(response.data?.message || 'Association request submitted! Waiting for verifier approval.', 'success');
       } else {
         // For verifiers, update directly (they can self-approve)
         // For verifiers, send the institute display name string
@@ -412,6 +453,56 @@ const fetchContactInfo = async () => {
       showToast(error.response?.data?.message || 'Failed to change password', 'error');
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  // Student profile update request handlers
+  const handleProfileRequestChange = (e) => {
+    setProfileRequest({
+      ...profileRequest,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleProfileRequestSubmit = async (e) => {
+    e.preventDefault();
+
+    // Require at least one field to be provided
+    const { dob, classLevel, section, house } = profileRequest;
+    if (!dob && !classLevel && !section && !house) {
+      showToast('Please provide at least one field to request an update', 'error');
+      return;
+    }
+
+    // Validate dob if provided (basic check)
+    if (dob) {
+      const parsed = Date.parse(dob);
+      if (Number.isNaN(parsed)) {
+        showToast('Please provide a valid date of birth (YYYY-MM-DD)', 'error');
+        return;
+      }
+    }
+
+    try {
+      setProfileRequestLoading(true);
+      // Only send fields that are non-empty
+      const payload = {};
+      if (dob) payload.dob = dob;
+      if (classLevel) payload.classLevel = classLevel;
+      if (section) payload.section = section;
+      if (house) payload.house = house;
+
+      await userAPI.createProfileUpdateRequest(payload);
+      showToast('Profile update request submitted. A verifier will review it shortly.', 'success');
+      // Clear the form
+      setProfileRequest({ dob: '', classLevel: '', section: '', house: '' });
+      // Optionally refresh user data or requests
+      fetchUser();
+    } catch (err) {
+      console.error('Failed to submit profile update request:', err);
+      showToast(err?.response?.data?.message || 'Failed to submit profile update request', 'error');
+    } finally {
+      setProfileRequestLoading(false);
     }
   };
 
@@ -873,6 +964,24 @@ const fetchContactInfo = async () => {
                       </p>
                     </div>
 
+                    <div className="mt-2">
+                      <label htmlFor="associationType" className="block text-sm font-medium text-gray-700">Association Type</label>
+                      <select
+                        id="associationType"
+                        name="associationType"
+                        className="form-input mt-1"
+                        value={studentAssociationType}
+                        onChange={(e) => setStudentAssociationType(e.target.value)}
+                        disabled={user?.roleSetPermanently && studentAssociationType === 'ACTIVE'}
+                      >
+                        <option value="ACTIVE">Active Member</option>
+                        <option value="ALUMNI">Alumni</option>
+                      </select>
+                      {user?.roleSetPermanently && (
+                        <p className="mt-2 text-xs text-gray-500">You have a permanent role set — ACTIVE association requests are disabled.</p>
+                      )}
+                    </div>
+
                     <div>
                       <label htmlFor="institutionSearch" className="block text-sm font-medium text-gray-700">Institution/Organization</label>
                       <div className="flex items-center space-x-2">
@@ -1059,6 +1168,117 @@ const fetchContactInfo = async () => {
                       </div>
                     )}
 
+                    {/* Allow students to add another association (e.g., ALUMNI) while keeping their primary ACTIVE association */}
+                    {user.role === 'STUDENT' && (
+                      <div className="mt-4">
+                        {!addingAnotherAssociation ? (
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => { setAddingAnotherAssociation(true); setStudentAssociationType('ALUMNI'); }}
+                              className="btn-secondary"
+                            >
+                              Add another association
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-4 bg-white border border-gray-200 rounded-md p-4">
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">Add Another Association</h4>
+                            <p className="text-sm text-gray-600 mb-3">Add an additional association (for example, mark a previous school as ALUMNI). This will create a separate request and will not overwrite your current primary institution if you choose ALUMNI.</p>
+                            <form onSubmit={handleInstitutionRequest} className="space-y-3">
+                              <div>
+                                <label htmlFor="addInstitutionSearch" className="block text-sm font-medium text-gray-700">Institution/Organization</label>
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    id="addInstitutionSearch"
+                                    name="addInstitutionSearch"
+                                    placeholder="Search by name, district, or state..."
+                                    value={searchTerm}
+                                    onChange={e => { setSearchTerm(e.target.value); setShowInstitutionResults(false); setSelectedInstitutionId(null); }}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setShowInstitutionResults(true); } }}
+                                    className="form-input mt-1 w-full"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowInstitutionResults(true)}
+                                    className="btn-secondary mt-1"
+                                  >
+                                    Search
+                                  </button>
+                                </div>
+                                <ul className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md">
+                                  {showInstitutionResults ? (
+                                    filteredInstitutions.length > 0 ? filteredInstitutions.map(inst => (
+                                      <li
+                                        key={inst.id}
+                                        className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => {
+                                          setUser(prev => ({ ...prev, institute: inst.displayName }));
+                                          setSelectedInstitutionId(inst.id);
+                                          setSearchTerm(inst.displayName);
+                                          setShowInstitutionResults(false);
+                                        }}
+                                      >
+                                        <div>
+                                          <p className="text-sm font-medium text-gray-900">{inst.displayName}</p>
+                                          <p className="text-xs text-gray-500">{inst.address?.district}, {inst.address?.state}</p>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          {inst.claimed ? (
+                                            <span className="text-green-600 text-xs font-semibold">Verified</span>
+                                          ) : (
+                                            <button
+                                              type="button"
+                                              onClick={(e) => { e.stopPropagation(); router.push(`/institution-claim?instId=${inst.id}`); }}
+                                              className="text-red-600 text-xs underline"
+                                            >
+                                              Claim
+                                            </button>
+                                          )}
+
+                                          <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); setUser(prev => ({ ...prev, institute: inst.displayName })); setSelectedInstitutionId(inst.id); setSearchTerm(inst.displayName); setShowInstitutionResults(false); }}
+                                            className={`text-sm px-2 py-1 rounded ${selectedInstitutionId === inst.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                          >
+                                            {selectedInstitutionId === inst.id ? 'Selected' : 'Select'}
+                                          </button>
+                                        </div>
+                                      </li>
+                                    )) : (
+                                      <li className="px-3 py-2 text-sm text-gray-500">No institutions found</li>
+                                    )
+                                  ) : (
+                                    <li className="px-3 py-2 text-sm text-gray-500">Click Search to show results</li>
+                                  )}
+                                </ul>
+                              </div>
+
+                              <div>
+                                <label htmlFor="addAssociationType" className="block text-sm font-medium text-gray-700">Association Type</label>
+                                <select
+                                  id="addAssociationType"
+                                  name="addAssociationType"
+                                  className="form-input mt-1"
+                                  value={studentAssociationType}
+                                  onChange={(e) => setStudentAssociationType(e.target.value)}
+                                >
+                                  <option value="ALUMNI">Alumni</option>
+                                  <option value="ACTIVE">Active Member</option>
+                                </select>
+                              </div>
+
+                              <div className="flex justify-end space-x-3 pt-2">
+                                <button type="button" onClick={() => { setAddingAnotherAssociation(false); setShowInstitutionResults(false); setSearchTerm(''); }} className="btn-secondary">Cancel</button>
+                                <button type="submit" className="btn-primary" disabled={saving || !(user.institute || selectedInstitutionId)}>{saving ? 'Submitting...' : 'Submit'}</button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -1096,6 +1316,22 @@ const fetchContactInfo = async () => {
                           value={user.role || ''}
                           disabled
                         />
+                        {Array.isArray(user?.alumniAssociations) && user.alumniAssociations.length > 0 && (
+                          <div className="mt-4 bg-gray-50 p-3 rounded-md border border-gray-100">
+                            <h5 className="text-sm font-medium text-gray-800">Previous Institutes</h5>
+                            <p className="text-xs text-gray-500 mb-2">Approved alumni associations from your profile</p>
+                            <ul className="space-y-2">
+                              {user.alumniAssociations.map((a, idx) => (
+                                <li key={a.institute + idx} className="flex items-start justify-between text-sm">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{a.institute}</div>
+                                    <div className="text-xs text-gray-600">{a.role || 'Student'} • {a.approvedAt ? new Date(a.approvedAt).toLocaleDateString() : (a.approvedBy ? 'Approved' : '—')}</div>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
@@ -1116,6 +1352,84 @@ const fetchContactInfo = async () => {
                         </button>
                       </div>
                     </form>
+                    {/* Student Profile Update Request Form */}
+                    {user.role === 'STUDENT' && (
+                      <div className="mt-6 bg-white border border-gray-200 rounded-md p-6">
+                        <h4 className="text-md font-medium text-gray-900 mb-2">Request Profile Update</h4>
+                        <p className="text-sm text-gray-600 mb-4">Request changes to your profile fields (date of birth, class/grade, section, house). A verifier from your institution will review and approve/reject this request.</p>
+                        <form onSubmit={handleProfileRequestSubmit} className="space-y-4">
+                          <div>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                            <input
+                              type="date"
+                              id="dob"
+                              name="dob"
+                              value={profileRequest.dob}
+                              disabled={!!user?.dob}
+                              onChange={handleProfileRequestChange}
+                              className="form-input mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="classLevel" className="block text-sm font-medium text-gray-700">Class / Grade</label>
+                            <input
+                              type="text"
+                              id="classLevel"
+                              name="classLevel"
+                              value={profileRequest.classLevel}
+                              disabled={!!user?.classLevel}
+                              onChange={handleProfileRequestChange}
+                              placeholder="e.g. 10, 11, FY BSc"
+                              className="form-input mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="section" className="block text-sm font-medium text-gray-700">Section</label>
+                            <input
+                              type="text"
+                              id="section"
+                              name="section"
+                              value={profileRequest.section}
+                              disabled={!!user?.section}
+                              onChange={handleProfileRequestChange}
+                              placeholder="e.g. A, B, C"
+                              className="form-input mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="house" className="block text-sm font-medium text-gray-700">House</label>
+                            <input
+                              type="text"
+                              id="house"
+                              name="house"
+                              disabled={!!user?.house}
+                              value={profileRequest.house}
+                              onChange={handleProfileRequestChange}
+                              placeholder="e.g. Red, Blue"
+                              className="form-input mt-1"
+                            />
+                          </div>
+
+
+                          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                            
+                            <button
+                              type="submit"
+                              className="btn-primary"
+                              disabled={(
+                                // disable when all fields already exist on the saved user profile
+                                !!profileRequest?.dob && !!user?.classLevel && !!user?.section && !!user?.house
+                              )}
+                            >
+                              {profileRequestLoading ? 'Submitting...' : 'Submit Request'}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

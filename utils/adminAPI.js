@@ -214,6 +214,38 @@ export const instituteAdminAPI = {
     return response.data;
   },
 
+  // --- Profile Update Requests (for Institute Admins / Verifiers) ---
+  // List pending profile update requests for this institute
+  listProfileUpdateRequests: async (params = {}) => {
+    // GET /api/users/profile-requests
+    const response = await api.get('/users/profile-requests', { params });
+    console.log(response);
+    return response.data;
+  },
+
+  // Decide (approve/reject) a profile update request
+  decideProfileUpdateRequest: async (requestId, action, comment) => {
+    // POST /api/users/profile-requests/:requestId/decide
+    const payload = { action };
+    if (comment) payload.comment = comment;
+    const response = await api.post(`/users/profile-requests/${requestId}/decide`, payload);
+    return response.data;
+  },
+
+  // Directly update a student's profile (admin/verifier endpoint)
+  updateStudentProfile: async (userId, data) => {
+    // PUT /api/users/:userId/profile
+    const response = await api.put(`/users/${userId}/profile`, data);
+    return response.data;
+  },
+
+  // Get a student's profile (admin/verifier endpoint)
+  getStudentProfile: async (userId) => {
+    // GET /api/users/:userId/profile
+    const response = await api.get(`/users/${userId}/profile`);
+    return response.data;
+  },
+
   // --- Association Requests ---
   getAssociationRequests: async (params = {}) => {
     const response = await api.get('/institute-admin/association-requests', { params });

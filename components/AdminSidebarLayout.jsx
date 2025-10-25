@@ -91,6 +91,9 @@ export default function AdminSidebarLayout({ children, title = '' }) {
       return [
         { href: '/admin/institute-admin/dashboard', icon: 'dashboard', label: 'Dashboard', hash: '' },
         { href: '/admin/institute-admin/dashboard#users', icon: 'users', label: 'Users', hash: 'users' },
+        // Direct pages for student management and profile requests
+        { href: '/admin/institute-admin/students', icon: 'users', label: 'Students' },
+        { href: '/admin/institute-admin/profile-requests', icon: 'requests', label: 'Profile Requests' },
         { href: '/admin/institute-admin/dashboard#requests', icon: 'requests', label: 'Requests', hash: 'requests' },
         { href: '/admin/institute-admin/events', icon: 'events', label: 'Events' },
         { href: '/admin/institute-admin/dashboard#settings', icon: 'settings', label: 'Settings', hash: 'settings' },
