@@ -108,12 +108,22 @@ export default function SidebarLayout({ children, title = '' }) {
   }, [router]);
 
   const isVerifier = user?.role === 'VERIFIER';
+  const isExternalVerifier = isVerifier && !!user?.externalContact;
 
   const items = useMemo(() => {
     if (isVerifier) {
-      // Verifiers only see verifier-specific pages and profile
+      // External verifiers (placeholder users signed via magic link) get a minimal menu
+      if (isExternalVerifier) {
+        return [
+          { href: '/verifier/chats', icon: 'requests', label: 'Chats' }
+        ];
+      }
+
+      // Full verifier menu
       return [
         { href: '/verifier/dashboard', icon: 'verifier', label: 'Verifier Dashboard' },
+        { href: '/verifier/background-verification', icon: 'requests', label: 'Background Verification' },
+        { href: '/verifier/chats', icon: 'requests', label: 'Chats' },
         { href: '/verifier/requests', icon: 'requests', label: 'Verification Requests' },
         { href: '/verifier/students', icon: 'students', label: 'Institute Students' },
         { href: '/verifier/events', icon: 'events', label: 'Events' },
@@ -126,6 +136,7 @@ export default function SidebarLayout({ children, title = '' }) {
       { href: '/experiences', icon: 'experience', label: 'Experiences' },
       { href: '/education', icon: 'education', label: 'Education' },
       { href: '/projects', icon: 'projects', label: 'Projects' },
+      { href: '/background-verification/my-requests', icon: 'requests', label: 'My Requests' },
       { href: '/collaborations', icon: 'collaboration', label: 'Collaborations' },
       { href: '/profile', icon: 'settings', label: 'Profile' },
     ];
@@ -136,6 +147,8 @@ export default function SidebarLayout({ children, title = '' }) {
     document.body.classList.add('with-sidebar');
     return () => document.body.classList.remove('with-sidebar');
   }, []);
+
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -167,39 +180,58 @@ export default function SidebarLayout({ children, title = '' }) {
             />
           ))}
 
-          <div className="mt-6 text-xs text-gray-400 font-medium px-3 mb-2">General</div>
-          <Link href="/profile" className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
-            <span className="inline-flex items-center justify-center rounded-lg bg-white border border-gray-200 p-2 text-gray-700 group-hover:border-gray-300">
-              <Icon name="settings" className="w-4 h-4" />
-            </span>
-            Settings
-          </Link>
-          {/* Quick-jump anchors for Profile tabs to reduce scrolling */}
-          {router.pathname === '/profile' && (
-            <div className="mt-2 pl-12 space-y-1">
-              <a href="#tab-profile" className="block text-xs text-gray-500 hover:text-gray-800">Personal Info</a>
-              <a href="#tab-institution" className="block text-xs text-gray-500 hover:text-gray-800">Institution</a>
-              <a href="#tab-portfolio" className="block text-xs text-gray-500 hover:text-gray-800">Portfolio Visibility</a>
-              <a href="#tab-settings" className="block text-xs text-gray-500 hover:text-gray-800">Settings</a>
+          {/* If this is an external placeholder verifier show a Logout button */}
+          {isExternalVerifier && (
+            <div className="px-3 mt-4">
+              <button
+                onClick={() => { logout(); router.push('/'); }}
+                className="w-full text-left group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                <span className="inline-flex items-center justify-center rounded-lg bg-white border border-red-200 p-2 text-red-600 group-hover:border-red-300">
+                  <Icon name="logout" className="w-4 h-4" />
+                </span>
+                Logout
+              </button>
             </div>
           )}
-          <button
-            onClick={() => { logout(); router.push('/'); }}
-            className="w-full text-left group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-          >
-            <span className="inline-flex items-center justify-center rounded-lg bg-white border border-red-200 p-2 text-red-600 group-hover:border-red-300">
-              <Icon name="logout" className="w-4 h-4" />
-            </span>
-            Logout
-          </button>
 
-          {/* Share portfolio section - only for regular users, not verifiers */}
-          {!isVerifier && (
-            <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 text-white">
-              <div className="text-sm font-medium">Share your portfolio</div>
-              <p className="text-xs text-white/90 mt-1">Copy your public link from Profile and start sharing.</p>
-              <Link href="/profile" className="inline-block mt-3 text-xs bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg">Go to Profile</Link>
-            </div>
+          {!isExternalVerifier && (
+            <>
+              <div className="mt-6 text-xs text-gray-400 font-medium px-3 mb-2">General</div>
+              <Link href="/profile" className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                <span className="inline-flex items-center justify-center rounded-lg bg-white border border-gray-200 p-2 text-gray-700 group-hover:border-gray-300">
+                  <Icon name="settings" className="w-4 h-4" />
+                </span>
+                Settings
+              </Link>
+              {/* Quick-jump anchors for Profile tabs to reduce scrolling */}
+              {router.pathname === '/profile' && (
+                <div className="mt-2 pl-12 space-y-1">
+                  <a href="#tab-profile" className="block text-xs text-gray-500 hover:text-gray-800">Personal Info</a>
+                  <a href="#tab-institution" className="block text-xs text-gray-500 hover:text-gray-800">Institution</a>
+                  <a href="#tab-portfolio" className="block text-xs text-gray-500 hover:text-gray-800">Portfolio Visibility</a>
+                  <a href="#tab-settings" className="block text-xs text-gray-500 hover:text-gray-800">Settings</a>
+                </div>
+              )}
+              <button
+                onClick={() => { logout(); router.push('/'); }}
+                className="w-full text-left group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                <span className="inline-flex items-center justify-center rounded-lg bg-white border border-red-200 p-2 text-red-600 group-hover:border-red-300">
+                  <Icon name="logout" className="w-4 h-4" />
+                </span>
+                Logout
+              </button>
+
+              {/* Share portfolio section - only for regular users, not verifiers */}
+              {!isVerifier && (
+                <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 text-white">
+                  <div className="text-sm font-medium">Share your portfolio</div>
+                  <p className="text-xs text-white/90 mt-1">Copy your public link from Profile and start sharing.</p>
+                  <Link href="/profile" className="inline-block mt-3 text-xs bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg">Go to Profile</Link>
+                </div>
+              )}
+            </>
           )}
         </nav>
       </aside>

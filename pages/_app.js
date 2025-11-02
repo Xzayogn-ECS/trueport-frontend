@@ -13,10 +13,11 @@ function MyApp({ Component, pageProps }) {
   };
 
   // Support per-page layout pattern
+  // If a page provides its own `getLayout`, trust it (it will render SidebarLayout when needed).
+  // Otherwise render the global Navbar above pages that do not opt into a layout.
   const getLayout = Component.getLayout || ((page) => (
     <>
-      {/* Hide Navbar when SidebarLayout is active */}
-      {typeof window !== 'undefined' && document.body.classList.contains('with-sidebar') ? null : <Navbar />}
+      <Navbar />
       {page}
     </>
   ));
