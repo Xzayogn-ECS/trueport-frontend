@@ -18,6 +18,7 @@ export default function BackgroundVerification({ showToast }) {
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, page]);
 
   // If a request id is provided in the query (e.g. ?open=<id>), open the details modal

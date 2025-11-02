@@ -21,6 +21,7 @@ export default function VerifierChats({ showToast }) {
   useEffect(() => {
     fetchChats();
     return () => stopPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // load current user from localStorage for message ownership checks
@@ -42,6 +43,7 @@ export default function VerifierChats({ showToast }) {
       if (exists) openChat(exists.id || exists._id || chatToOpen);
       else openChat(chatToOpen);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router?.query?.open, chats]);
 
   useEffect(() => {

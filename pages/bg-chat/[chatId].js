@@ -9,7 +9,7 @@ export default function BGChatRedirect() {
     if (!chatId) return;
     // Redirect to verifier chat page and open specific chat via query param
     router.replace(`/verifier/chats?open=${encodeURIComponent(chatId)}`);
-  }, [chatId]);
+  }, [chatId, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

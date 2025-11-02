@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function MagicLinkPage() {
   const router = useRouter();
@@ -105,7 +106,7 @@ export default function MagicLinkPage() {
           <h3 className="text-lg font-medium text-red-600">Magic link invalid or expired</h3>
           <p className="text-sm text-gray-600 mt-2">{error}</p>
           <div className="mt-4">
-            <a href="/auth/login" className="text-primary-600 hover:underline">Sign in manually</a>
+            <Link href="/auth/login" className="text-primary-600 hover:underline">Sign in manually</Link>
           </div>
         </div>
       </div>

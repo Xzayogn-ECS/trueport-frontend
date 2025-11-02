@@ -13,6 +13,7 @@ export default function SharedRequests({ showToast }) {
 
   useEffect(() => {
     fetchSharedRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSharedRequests = async () => {

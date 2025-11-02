@@ -45,6 +45,7 @@ export default function MyRequestsPage() {
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handlers for submit referees modal

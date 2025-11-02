@@ -18,6 +18,7 @@ export default function Events({ showToast }) {
 
   useEffect(() => {
     fetchEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchEvents = async () => {

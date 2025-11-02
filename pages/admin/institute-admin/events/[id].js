@@ -36,6 +36,7 @@ export default function EventDetail({ showToast }) {
       fetchEvent();
       fetchStudents(studentFilters);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
 const fetchEvent = async () => {

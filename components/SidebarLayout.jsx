@@ -140,7 +140,7 @@ export default function SidebarLayout({ children, title = '' }) {
       { href: '/collaborations', icon: 'collaboration', label: 'Collaborations' },
       { href: '/profile', icon: 'settings', label: 'Profile' },
     ];
-  }, [isVerifier]);
+  }, [isVerifier, isExternalVerifier]);
 
   useEffect(() => {
     // Mark that sidebar layout is active so _app can avoid rendering the top Navbar

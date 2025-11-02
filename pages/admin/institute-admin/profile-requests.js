@@ -25,6 +25,7 @@ function InstituteAdminProfileRequests({ showToast }) {
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, filterStatus, currentPage]);
 
   const fetchRequests = async () => {
