@@ -1,11 +1,11 @@
 // CSV Helper utilities for bulk import functionality
 
 export const createCSVTemplate = () => {
-  const headers = ['name', 'email', 'role'];
+  const headers = ['name', 'email', 'role', 'associationtype'];
   const sampleData = [
-    ['John Doe', 'john.doe@example.com', 'STUDENT'],
-    ['Jane Smith', 'jane.smith@example.com', 'VERIFIER'],
-    ['Bob Johnson', 'bob.johnson@example.com', 'STUDENT']
+    ['John Doe', 'john.doe@example.com', 'STUDENT', 'ALUMNI'],
+    ['Jane Smith', 'jane.smith@example.com', 'VERIFIER', 'ACTIVE'],
+    ['Bob Johnson', 'bob.johnson@example.com', 'STUDENT', 'ACTIVE']
   ];
   
   const csvContent = [

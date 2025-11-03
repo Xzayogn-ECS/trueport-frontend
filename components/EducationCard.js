@@ -128,9 +128,9 @@ const EducationCard = ({ education, showActions = false, onEdit, onDelete, onReq
       )}
 
       {/* View Proof action */}
-      {attachments.length > 0 && (
+      {verified && (
         <div className="mt-2">
-          <button onClick={() => setShowProof(true)} className="text-sm text-primary-600 hover:text-primary-700">View Proof</button>
+          <button onClick={() => setShowProof(true)} className="text-sm text-primary-600 hover:text-primary-700 font-medium">View Proof</button>
         </div>
       )}
 

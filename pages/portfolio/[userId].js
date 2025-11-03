@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
 import WCard from '../../components/WCard'
+import ProofModal from '../../components/ProofModal'
 import api from '../../utils/api'
 import { getDisplayName } from '../../utils/nameUtils'
 
@@ -57,6 +58,7 @@ export default function PublicPortfolio () {
   const [customUrls, setCustomUrls] = useState([])
   const [loading, setLoading] = useState(true)
   const [githubLoading, setGithubLoading] = useState(false)
+  const [proofModal, setProofModal] = useState({ isOpen: false, item: null, type: null })
 
   useEffect(() => {
     if (userId) fetchPortfolioData()
@@ -360,6 +362,16 @@ export default function PublicPortfolio () {
                                   ))}
                                 </div>
                               )}
+                              {st === 'verified' && (
+                                <div className='mt-3'>
+                                  <button
+                                    onClick={() => setProofModal({ isOpen: true, item: exp, type: 'experience' })}
+                                    className='text-sm text-indigo-600 hover:text-indigo-700 font-medium'
+                                  >
+                                    View Proof →
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </motion.div>
                         )
@@ -451,6 +463,16 @@ export default function PublicPortfolio () {
                             {/* show full status text here (no tooltip) */}
                             <StatusPill status={st} />
                           </div>
+                          {st === 'verified' && (
+                            <div className='mt-2'>
+                              <button
+                                onClick={() => setProofModal({ isOpen: true, item: edu, type: 'education' })}
+                                className='text-xs text-indigo-600 hover:text-indigo-700 font-medium'
+                              >
+                                View Proof →
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )
                     })}
@@ -516,6 +538,16 @@ export default function PublicPortfolio () {
             </Button>
           </div>
         </section>
+
+        {/* Proof Modal */}
+        {proofModal.isOpen && (
+          <ProofModal
+            isOpen={proofModal.isOpen}
+            onClose={() => setProofModal({ isOpen: false, item: null, type: null })}
+            item={proofModal.item}
+            request={null}
+          />
+        )}
 
         {/* Footer */}
         <footer className='mt-10 border-t border-slate-200 pt-6 text-center text-sm text-slate-500'>
