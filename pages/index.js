@@ -1,7 +1,42 @@
-import Head from 'next/head';
-import Link from 'next/link';
+import Head from 'next/head'
+import Link from 'next/link'
 
 export default function Home() {
+  // Wikimedia hotlink helper (stable)
+  const wp = (file) => `https://commons.wikimedia.org/wiki/Special:FilePath/${file}`
+
+  const supporters = [
+    { name: 'Amazon AWS', src: wp('Amazon_Web_Services_Logo.svg') },
+    { name: 'Microsoft Azure', src: wp('Microsoft_Azure_Logo.svg') },
+    { name: 'MongoDB', src: wp('MongoDB_Logo.svg') },
+    { name: 'Zoho', src: wp('ZOHO_logo_2023.svg') },
+    { name: 'Notion', src: wp('Notion-logo.svg') },
+    { name: 'Mixpanel', src: wp('Mixpanel_full_logo_%E2%80%93_purple.png') },
+    // ✅ fixed
+    { name: 'Startup India', src: '/Startup_India.png' },
+    { name: 'DPIIT (MoCI)', src: wp('Ministry_of_Commerce_and_Industry.svg') },
+    { name: 'Spark Leeds', src: null },
+    { name: 'Favcy Venture Builders', src: null },
+  ]
+
+  const alumni = [
+    { name: 'BCG (Alumni)', src: wp('Boston_Consulting_Group_2020_logo.svg') },
+    { name: 'Bosch (Alumni)', src: wp('Bosch-logo.svg') },
+    { name: 'DailyRounds (Alumni)', src: null },
+    { name: 'Marrow (Alumni)', src: null },
+    { name: 'Goldman Sachs (Alumni)', src: wp('Goldman_Sachs.svg') },
+    { name: 'Oracle (Alumni)', src: wp('Oracle_logo.svg') },
+    // ✅ fixed (use 2020 wordmark)
+    { name: 'Wells Fargo (Alumni)', src: wp('Wells_Fargo_Logo_(2020).svg') },
+    // ✅ fixed (PNG exists; some IITD SVG mirrors are flaky)
+{ name: 'IIT Delhi (Alumni)', src: '/IITD_Logo.png' },
+{ name: 'IIM Bangalore (Alumni)', src: '/IIM_Bangalore.jpeg' },
+{ name: 'IIFT Delhi (Alumni)', src: wp('IIFT-Logo-Black.png') },
+// ✅ re-assert (exact filename)
+{ name: 'TISS Mumbai (Alumni)', src: '/TISS_Mumbai.svg' },
+
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
       <Head>
@@ -97,27 +132,9 @@ export default function Home() {
         <section className="mt-12 sm:mt-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
-              {
-                title: 'Verified Experiences',
-                desc: 'Get mentors & employers to vouch for real work.',
-                icon: (
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4" /></svg>
-                )
-              },
-              {
-                title: 'Upload Proof',
-                desc: 'Attach docs, images, videos and certificates.',
-                icon: (
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" /></svg>
-                )
-              },
-              {
-                title: 'Share & Get Hired',
-                desc: 'Send one link — remove resume guesswork.',
-                icon: (
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A2 2 0 0122 9.618v4.764a2 2 0 01-2.447 1.894L15 14M10 14l-4.553 2.276A2 2 0 013 14.382V9.618a2 2 0 011.447-1.894L10 10" /></svg>
-                )
-              }
+              { title: 'Verified Experiences', desc: 'Get mentors & employers to vouch for real work.', icon: (<svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4" /></svg>) },
+              { title: 'Upload Proof', desc: 'Attach docs, images, videos and certificates.', icon: (<svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" /></svg>) },
+              { title: 'Share & Get Hired', desc: 'Send one link — remove resume guesswork.', icon: (<svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A2 2 0 0122 9.618v4.764a2 2 0 01-2.447 1.894L15 14M10 14l-4.553 2.276A2 2 0 013 14.382V9.618a2 2 0 011.447-1.894L10 10" /></svg>) },
             ].map((f) => (
               <div key={f.title} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm">
                 <div className="flex items-start gap-3 sm:gap-4">
@@ -132,6 +149,46 @@ export default function Home() {
           </div>
         </section>
 
+        {/* SUPPORTED BY */}
+        <section className="mt-12 sm:mt-16">
+          <h3 className="text-center text-xs sm:text-sm font-medium text-gray-500">Backed & supported by</h3>
+          <p className="mt-2 text-center text-[12px] sm:text-sm text-gray-600">
+            Amazon AWS, Microsoft Azure, MongoDB, Zoho, Notion, Mixpanel, Startup India, DPIIT, Spark Leeds, Favcy Venture Builders
+          </p>
+          <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-center">
+            {supporters.map((b) => (
+              <div key={b.name} className="flex items-center justify-center rounded-xl border border-gray-100 bg-white p-3 sm:p-4 h-16 sm:h-20">
+                {b.src ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt={b.name} src={b.src} className="max-h-8 sm:max-h-10 w-auto opacity-80" />
+                ) : (
+                  <span className="text-[11px] sm:text-xs text-gray-500">{b.name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-center text-[11px] text-gray-400">Logos for identification only; trademarks belong to their owners.</p>
+        </section>
+
+        {/* ALUMNI STRIP */}
+        <section className="mt-12 sm:mt-16">
+          <h3 className="text-center text-xs sm:text-sm font-medium text-gray-500">
+            With alumni from BCG, Bosch, DailyRounds/Marrow, Goldman Sachs, Oracle, Wells Fargo • IIT Delhi, IIM Bangalore, IIFT Delhi, TISS Mumbai
+          </h3>
+          <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-center">
+            {alumni.map((a) => (
+              <div key={a.name} className="flex items-center justify-center rounded-xl border border-gray-100 bg-white p-3 sm:p-4 h-16 sm:h-20">
+                {a.src ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt={a.name} src={a.src} className="max-h-8 sm:max-h-10 w-auto opacity-80" />
+                ) : (
+                  <span className="text-[11px] sm:text-xs text-gray-500">{a.name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* HOW IT WORKS */}
         <section className="mt-12 sm:mt-16 bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">How it works</h2>
@@ -139,7 +196,7 @@ export default function Home() {
             {[
               { n: '1', title: 'Add entry', desc: 'Describe what you did, attach proof.' },
               { n: '2', title: 'Request verification', desc: 'Send to a mentor or employer.' },
-              { n: '3', title: 'Share link', desc: 'One verified portfolio — universal link.' }
+              { n: '3', title: 'Share link', desc: 'One verified portfolio — universal link.' },
             ].map((s) => (
               <div key={s.n} className="flex flex-col items-center text-center p-3 sm:p-4">
                 <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary-600 text-white font-semibold text-base sm:text-lg">{s.n}</div>
@@ -150,16 +207,16 @@ export default function Home() {
           </div>
         </section>
 
-<footer className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-gray-400 space-y-2">
-  <div>© {new Date().getFullYear()} EQUANIMITY CAREER SOLUTIONS PRIVATE LIMITED</div>
-  <div>
-    Contact: <a href="mailto:yash@xzayogn.com" className="text-primary-600 hover:underline">yash@xzayogn.com</a> | 
-    <a href="tel:+919294830050" className="text-primary-600 hover:underline ml-1">+91 92948 30050</a>
-  </div>
-  <div>TruePortMe - Verified Digital Portfolio | Create and verify your professional experiences with TruePortMe</div>
-  <div className="text-gray-500">tpm.omnimise.com</div>
-</footer>
+        <footer className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-gray-400 space-y-2">
+          <div>© {new Date().getFullYear()} EQUANIMITY CAREER SOLUTIONS PRIVATE LIMITED</div>
+          <div>
+            Contact: <a href="mailto:yash@xzayogn.com" className="text-primary-600 hover:underline">yash@xzayogn.com</a> |
+            <a href="tel:+919294830050" className="text-primary-600 hover:underline ml-1">+91 92948 30050</a>
+          </div>
+          <div>TruePortMe - Verified Digital Portfolio | Create and verify your professional experiences with TruePortMe</div>
+          <div className="text-gray-500">tpm.omnimise.com</div>
+        </footer>
       </main>
     </div>
-  );
+  )
 }
