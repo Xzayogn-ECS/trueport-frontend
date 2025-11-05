@@ -149,6 +149,8 @@ export default function Home() {
           </div>
         </section>
 
+
+
         {/* SUPPORTED BY */}
         <section className="mt-12 sm:mt-16">
           <h3 className="text-center text-xs sm:text-sm font-medium text-gray-500">Backed & supported by</h3>
