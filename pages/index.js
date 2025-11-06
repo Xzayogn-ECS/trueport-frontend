@@ -14,16 +14,15 @@ export default function Home() {
     { name: 'Mixpanel', src: wp('Mixpanel_full_logo_%E2%80%93_purple.png') },
     // ✅ fixed
     { name: 'Startup India', src: '/Startup_India.png' },
-    { name: 'DPIIT (MoCI)', src: wp('Ministry_of_Commerce_and_Industry.svg') },
-    { name: 'Spark Leeds', src: null },
-    { name: 'Favcy Venture Builders', src: null },
+    { name: 'DPIIT (MoCI)', src: '/DPIIT.png' },
+    { name: 'Spark Leeds', src: '/Spark.png' },
+    { name: 'Favcy Venture Builders', src: '/Favcy.png' },
   ]
 
   const alumni = [
     { name: 'BCG (Alumni)', src: wp('Boston_Consulting_Group_2020_logo.svg') },
     { name: 'Bosch (Alumni)', src: wp('Bosch-logo.svg') },
-    { name: 'DailyRounds (Alumni)', src: null },
-    { name: 'Marrow (Alumni)', src: null },
+    { name: 'DailyRounds (Alumni)', src: '/Marrow-DailyRound.jpeg' },
     { name: 'Goldman Sachs (Alumni)', src: wp('Goldman_Sachs.svg') },
     { name: 'Oracle (Alumni)', src: wp('Oracle_logo.svg') },
     // ✅ fixed (use 2020 wordmark)
@@ -31,7 +30,7 @@ export default function Home() {
     // ✅ fixed (PNG exists; some IITD SVG mirrors are flaky)
 { name: 'IIT Delhi (Alumni)', src: '/IITD_Logo.png' },
 { name: 'IIM Bangalore (Alumni)', src: '/IIM_Bangalore.jpeg' },
-{ name: 'IIFT Delhi (Alumni)', src: wp('IIFT-Logo-Black.png') },
+{ name: 'IIFT Delhi (Alumni)', src: '/IIFT_Delhi.png' },
 // ✅ re-assert (exact filename)
 { name: 'TISS Mumbai (Alumni)', src: '/TISS_Mumbai.svg' },
 
